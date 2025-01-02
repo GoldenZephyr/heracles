@@ -30,7 +30,7 @@ def try_drop_index(db, index_name):
 
 
 # IP / Port for database
-URI = "neo4j://localhost:7687"
+URI = "neo4j://127.0.0.1:7687"
 # Database name / password for database
 AUTH = ("neo4j", "neo4jiscool")
 
