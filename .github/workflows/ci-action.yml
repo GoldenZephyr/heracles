@@ -1,4 +1,4 @@
-name: GitHub Actions Demo
+name: Heracles CI
 run-name: Heracles CI
 on:
     push:
@@ -8,19 +8,14 @@ on:
             - master
             - develop
 jobs:
-  Explore-GitHub-Actions:
+  Heracles-CI:
     runs-on: ubuntu-latest
     steps:
-      - run: echo "🎉 The job was automatically triggered by a ${{ github.event_name }} event."
-      - run: echo "🐧 This job is now running on a ${{ runner.os }} server hosted by GitHub!"
-      - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v4
         with:
             path: heracles_repo
-      - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
-      - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: pip install Heracles
+      - name: Install Heracles
         run: cd ${{ github.workspace }}/heracles_repo && pwd && pip install .
       - name: Checkout Spark-DSG
         uses: actions/checkout@v2
@@ -34,5 +29,5 @@ jobs:
       - name: Run Neo4j
         run: docker run -d --publish=7474:7474 --publish=7687:7687 --env=NEO4J_AUTH=neo4j/neo4j_pw neo4j:5.25.1
       - name: Run test script
-        run: cd ${{ github.workspace }}/heracles_repo && python3 examples/dsg_test.py
+        run: sleep 20 && cd ${{ github.workspace }}/heracles_repo && python3 examples/dsg_test.py
       - run: echo "🍏 This job's status is ${{ job.status }}."
