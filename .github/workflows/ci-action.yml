@@ -18,16 +18,15 @@ jobs:
         uses: actions/checkout@v4
         with:
             path: heracles_repo
-      #- name: Setup Python
-      #  uses: actions/setup-python@v5
-      #  with:
-      #      python-version: '3.12'
-      #      cache: 'pip'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
-      - name: List files in the repository
-        run: |
-          ls ${{ github.workspace }}
-      - run: cd ${{ github.workspace }}
-      - run: cd heracles_repo && pwd && pip install .
+      - run: cd ${{ github.workspace }}/heracles_repo
+      - name: pip install Heracles
+        run: pwd && pip install .
+      - name: pip install Spark-DSG
+        run: cd ${{ github.workspace }} && git clone git@github.com:MIT-SPARK/Spark-DSG.git && cd Spark-DSG && pip install .
+      - name: Run Neo4j
+        run: docker run -d --publish=7474:7474 --publish=7687:7687 --env=NEO4J_AUTH=neo4j/neo4j_pw
+      - name: Run test script
+        run: cd ${{ github.workspace }}/heracles_repo && python3 examples/dsg_test.py
       - run: echo "🍏 This job's status is ${{ job.status }}."
