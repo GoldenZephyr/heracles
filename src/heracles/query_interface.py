@@ -53,3 +53,8 @@ class Neo4jWrapper:
             ret = list(self.session.run(query, parameters=parameters, **kwargs))
             print("WARNING! Cannot print_profiles when atomic_queries is False")
             return list(ret), None, None
+
+    def query(self, query):
+        """A simplified query interface for use with LLMs"""
+        records, _, _ = self.driver.execute_query(query, database_=self.db_name)
+        return [r.data() for r in records]

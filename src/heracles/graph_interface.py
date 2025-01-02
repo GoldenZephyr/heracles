@@ -93,7 +93,7 @@ def insert_mesh_places_to_db(db, mesh_places):
     WITH $mesh_places AS places
     UNWIND places AS place
     WITH point({x: place.x, y: place.y, z: place.z}) AS p3d, place
-    MERGE (:MeshPlace {nodeSymbol: place.nodeSymbol, center: p3d})
+    MERGE (:MeshPlace {nodeSymbol: place.nodeSymbol, center: p3d, class: place.class})
     """,
         mesh_places=mesh_places,
     )

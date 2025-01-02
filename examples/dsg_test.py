@@ -29,21 +29,13 @@ def try_drop_index(db, index_name):
 
     try:
         db.execute(f"DROP INDEX {index_name}")
-    except neo4j.exceptions.DatabaseError as ex:
+    except neo4j.exceptions.DatabaseError:
         print(f"No index `{index_name}`")
 
 
 URI = "neo4j://localhost:7687"
 AUTH = ("neo4j", "neo4jiscool")
 
-# TODO: write this to graph
-layers = {
-    spark_dsg.DsgLayers.OBJECTS: "Object",
-    spark_dsg.DsgLayers.BUILDINGS: "Building",
-    spark_dsg.DsgLayers.MESH_PLACES: "MeshPlace",
-    spark_dsg.DsgLayers.PLACES: "Place",
-    spark_dsg.DsgLayers.ROOMS: "Room",
-}
 
 # G = spark_dsg.DynamicSceneGraph.load("scene_graph_full_loop_2.json")
 G = spark_dsg.DynamicSceneGraph.load("t3_w0_ths2_fused.json")
@@ -61,6 +53,13 @@ if G.metadata == {}:
     id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
     G.add_metadata({"labelspace": id_to_label})
 
+layers = {
+    spark_dsg.DsgLayers.OBJECTS: "Object",
+    spark_dsg.DsgLayers.BUILDINGS: "Building",
+    spark_dsg.DsgLayers.MESH_PLACES: "MeshPlace",
+    spark_dsg.DsgLayers.PLACES: "Place",
+    spark_dsg.DsgLayers.ROOMS: "Room",
+}
 G.add_metadata({"LayerIdToLayerStr": layers})
 
 with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
