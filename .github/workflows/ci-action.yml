@@ -22,8 +22,13 @@ jobs:
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: pip install Heracles
         run: cd ${{ github.workspace }}/heracles_repo && pwd && pip install .
-      - name: pip install Spark-DSG
-        run: cd ${{ github.workspace }} && git clone git@github.com:MIT-SPARK/Spark-DSG.git && cd Spark-DSG && pip install .
+      - name: Checkout Spark-DSG
+        uses: actions/checkout@v2
+        with:
+            repository: MIT-SPARK/Spark-DSG
+            path: './spark_dsg'
+      - name: Install Spark-DSG
+        run: cd ${{ github.workspace }}/Spark-DSG && pip install .
       - name: Run Neo4j
         run: docker run -d --publish=7474:7474 --publish=7687:7687 --env=NEO4J_AUTH=neo4j/neo4j_pw
       - name: Run test script
