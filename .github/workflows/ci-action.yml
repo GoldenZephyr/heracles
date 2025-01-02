@@ -28,7 +28,7 @@ jobs:
             repository: MIT-SPARK/Spark-DSG
             path: './spark_dsg'
       - name: Install Spark-DSG
-        run: cd ${{ github.workspace }}/Spark-DSG && pip install .
+        run: cd ${{ github.workspace }}/spark_dsg && pip install .
       - name: Run Neo4j
         run: docker run -d --publish=7474:7474 --publish=7687:7687 --env=NEO4J_AUTH=neo4j/neo4j_pw
       - name: Run test script
