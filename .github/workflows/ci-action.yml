@@ -16,9 +16,18 @@ jobs:
       - run: echo "🔎 The name of your branch is ${{ github.ref }} and your repository is ${{ github.repository }}."
       - name: Check out repository code
         uses: actions/checkout@v4
+        with:
+            path: heracles_repo
+      - name: Setup Python
+      - uses: actions/setup-python@v5
+        with:
+            python-version: '3.12'
+            cache: 'pip'
       - run: echo "💡 The ${{ github.repository }} repository has been cloned to the runner."
       - run: echo "🖥️ The workflow is now ready to test your code on the runner."
       - name: List files in the repository
         run: |
           ls ${{ github.workspace }}
+      - run: cd ${{ github.workspace }}
+      - run: cd heracles_repo && pwd && pip install .
       - run: echo "🍏 This job's status is ${{ job.status }}."
