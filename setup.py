@@ -9,5 +9,5 @@ setup(
     description="Cypher / Neo4j support for SparkDSG Scene graphs",
     package_dir={"": "src"},
     packages=find_packages("src"),
-    install_requires=[],
+    install_requires=["pyyaml", "neo4j-rust-ext"],
 )

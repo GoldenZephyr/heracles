@@ -1,18 +1,16 @@
 #!/usr/bin/env python3
+from importlib.resources import as_file, files
+import sys
+import time
+
 import spark_dsg
-from pydsg.pydsg_translator import spark_dsg_to_pydsg
-from pydsg.dsg_plotter import plot_dsg_places, plot_dsg_objects
+import yaml
+import neo4j
+
 import heracles
 from heracles.dsg_utils import summarize_dsg
 import heracles.resources
-import yaml
-from importlib.resources import as_file, files
-import neo4j
-
-import matplotlib.pyplot as plt
-
 from heracles.query_interface import Neo4jWrapper
-
 from heracles.graph_interface import (
     add_objects_from_dsg,
     add_places_from_dsg,
@@ -21,8 +19,6 @@ from heracles.graph_interface import (
     add_buildings_from_dsg,
     add_edges_from_dsg,
 )
-
-import time
 
 
 def try_drop_index(db, index_name):
@@ -33,12 +29,21 @@ def try_drop_index(db, index_name):
         print(f"No index `{index_name}`")
 
 
+# IP / Port for database
 URI = "neo4j://localhost:7687"
-AUTH = ("neo4j", "neo4jiscool")
+# Database name / password for database
+AUTH = ("neo4j", "neo4j_pw")
 
-
-# G = spark_dsg.DynamicSceneGraph.load("scene_graph_full_loop_2.json")
-G = spark_dsg.DynamicSceneGraph.load("t3_w0_ths2_fused.json")
+if len(sys.argv) > 1:
+    print(f"Trying to load {sys.argv[1]}")
+    G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
+    print("Success!")
+else:
+    # fn = "scene_graph_full_loop_2.json"
+    fn = "t3_w0_ths2_fused.json"
+    print(f"Trying to load {fn}")
+    G = spark_dsg.DynamicSceneGraph.load(fn)
+    print("Success!")
 
 
 summarize_dsg(G)
@@ -136,9 +141,3 @@ with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
     # Loop through results and do something with them
     for record in records:
         print(record.data())
-
-    # pdsg = spark_dsg_to_pydsg(G)
-    # plot_dsg_objects(pdsg)
-    # plot_dsg_places(pdsg)
-    # plt.show()
-    # plt.savefig("pics/objs1.png")
