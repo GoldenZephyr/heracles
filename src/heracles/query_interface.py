@@ -20,17 +20,24 @@ class Neo4jWrapper:
         self.print_profiles = print_profiles
         self.db_name = db_name
 
-    def __enter__(self):
+    def connect(self):
         self.driver = GraphDatabase.driver(self.db_uri, auth=self.db_auth)
         self.driver.verify_connectivity()
         if not self.atomic_queries:
             self.session = self.driver.session(database=self.db_name)
-        return self
 
-    def __exit__(self, exc_type, exc_value, traceback):
+    def close(self):
         if self.session is not None:
             self.session.close()
         self.driver.close()
+
+    def __enter__(self):
+        self.connect()
+        return self
+
+    def __exit__(self, exc_type, exc_value, traceback):
+        self.close()
+
 
     def execute(self, query, parameters=None, **kwargs):
         if self.atomic_queries:

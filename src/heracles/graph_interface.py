@@ -113,7 +113,7 @@ def add_rooms_from_dsg(G, db):
         room_to_dict(labelspace, r)
         for r in G.get_layer(spark_dsg.DsgLayers.ROOMS).nodes
     ]
-    insert_objects_to_db(db, rooms)
+    insert_rooms_to_db(db, rooms)
 
 
 def room_to_dict(node_classes, room):
@@ -133,8 +133,8 @@ def insert_rooms_to_db(db, rooms):
         """
     WITH $rooms AS rooms
     UNWIND rooms AS room
-    WITH point({x: object.x, y: object.y, z: object.z}) AS p3d, room
-    MERGE (:Object {nodeSymbol: room.nodeSymbol, center: p3d, class: room.class})
+    WITH point({x: room.x, y: room.y, z: room.z}) AS p3d, room
+    MERGE (:Room {nodeSymbol: room.nodeSymbol, center: p3d, class: room.class})
     """,
         rooms=rooms,
     )
