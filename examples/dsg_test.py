@@ -32,7 +32,7 @@ def try_drop_index(db, index_name):
 # IP / Port for database
 URI = "neo4j://127.0.0.1:7687"
 # Database name / password for database
-AUTH = ("neo4j", "neo4jiscool")
+AUTH = ("neo4j", "neo4j_pw")
 
 with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
 
