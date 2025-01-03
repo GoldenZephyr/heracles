@@ -18,7 +18,7 @@ docker run -d \
 
 Clone and install [`spark_dsg`](https://github.com/mit-SPARK/spark-dsg):
 ```bash
-sudo apt install libzmqpp-dev nlohmann-json3-dev
+sudo apt install libzmqpp-dev nlohmann-json3-dev ninja-build
 git clone git@github.com:MIT-SPARK/Spark-DSG.git
 cd Spark-DSG
 pip install .
@@ -30,6 +30,9 @@ git@github.com:npolshakova/heracles.git
 cd heracles
 pip install .
 ```
+
+If you run into installation problems, check `.github/workflows/ci-action.yml`
+for an example, as that successfully installs and runs the library for CI.
 
 If you don't have a scene graph to test with, you can use a large example scene
 graph [here](https://drive.google.com/file/d/1aktyS792PUrj2ACRu1DoxMGse55GWloB/view?usp=drive_link).

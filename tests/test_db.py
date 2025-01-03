@@ -71,14 +71,14 @@ def build_test_dsg():
     G.add_node(spark_dsg.DsgLayers.PLACES, spark_dsg.NodeSymbol("p", 1).value, place2)
 
     place1_2d = spark_dsg.PlaceNodeAttributes()
-    place1_2d.position = np.array([-1, 0, 1])
-    place1_2d.semantic_label = 4
+    place1_2d.position = np.array([-1.1, 0, 0])
+    place1_2d.semantic_label = 4  # ground
     G.add_node(
         spark_dsg.DsgLayers.MESH_PLACES, spark_dsg.NodeSymbol("P", 0).value, place1_2d
     )
     place2_2d = spark_dsg.PlaceNodeAttributes()
-    place2_2d.position = np.array([1, 0, 1])
-    place2_2d.semantic_label = 4
+    place2_2d.position = np.array([1.1, 0, 0])
+    place2_2d.semantic_label = 4  # ground
     G.add_node(
         spark_dsg.DsgLayers.MESH_PLACES, spark_dsg.NodeSymbol("P", 1).value, place2_2d
     )
@@ -182,17 +182,39 @@ def test_rooms(populated_db):
     assert np.all(np.isclose(q[0]["center"], np.array([0, 0, 0])))
 
 
-# def test_places(populated_db):
-#    assert 0 == 1
-#
-#
-# def test_mesh_places(populated_db):
-#    assert 0 == 1
-#
-#
-# def test_objects(populated_db):
-#    assert 0 == 1
-#
-#
-# def test_edges(populated_db):
-#    assert 0 == 1
+def test_places(populated_db):
+
+    q = populated_db.query("""MATCH (p: Place {nodeSymbol: "p(0)"}) RETURN p""")
+    assert np.all(np.isclose(np.array([-1, 0, 0]), q[0]["p"]["center"]))
+
+    q = populated_db.query("""MATCH (p: Place) RETURN p""")
+    assert len(q) == 2
+
+
+def test_mesh_places(populated_db):
+
+    q = populated_db.query("""MATCH (p: MeshPlace) RETURN p""")
+    assert len(q) == 2
+
+    q = populated_db.query("""MATCH (p: MeshPlace {nodeSymbol: "P(0)"}) RETURN p""")
+    assert np.all(np.isclose(np.array([-1.1, 0, 0]), q[0]["p"]["center"]))
+    assert q[0]["p"]["class"] == "ground"
+
+
+def test_objects(populated_db):
+    q = populated_db.query("""MATCH (o: Object) RETURN o""")
+    assert len(q) == 2
+
+    q = populated_db.query("""MATCH (o: Object {class: "box"}) RETURN o""")
+    assert len(q) == 1
+    assert q[0]["o"]["nodeSymbol"] == "o(0)"
+
+
+def test_edges(populated_db):
+    q = populated_db.query(
+        """MATCH (r: Room {nodeSymbol: "R(0)"})-[:CONTAINS*]->(o: Object) RETURN o"""
+    )
+
+    assert len(q) == 2
+    assert q[0]["o"]["class"] in ["box", "rock"]
+    assert q[1]["o"]["class"] in ["box", "rock"]

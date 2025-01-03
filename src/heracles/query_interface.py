@@ -38,7 +38,6 @@ class Neo4jWrapper:
     def __exit__(self, exc_type, exc_value, traceback):
         self.close()
 
-
     def execute(self, query, parameters=None, **kwargs):
         if self.atomic_queries:
             if self.print_profiles:
