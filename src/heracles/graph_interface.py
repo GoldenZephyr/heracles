@@ -1,4 +1,5 @@
 import spark_dsg
+import parse
 
 # Inserting objects
 
@@ -166,7 +167,7 @@ def insert_buildings_to_db(db, buildings):
     WITH $buildings AS buildings
     UNWIND buildings AS building
     WITH point({x: building.x, y: building.y, z: building.z}) AS p3d, building
-    MERGE (:Place {nodeSymbol: building.nodeSymbol, center: p3d})
+    MERGE (:Building {nodeSymbol: building.nodeSymbol, center: p3d})
     """,
         buildings=buildings,
     )
@@ -266,7 +267,6 @@ def add_edges_from_dsg(G, db):
 
 
 def insert_edges(db, edge_type, from_label, to_label, connections):
-
     query = f"""
     WITH $connections AS connections
     UNWIND connections AS connection
@@ -276,3 +276,150 @@ def insert_edges(db, edge_type, from_label, to_label, connections):
     """
     ret = db.execute(query, connections=connections)
     return ret
+
+def get_layer_nodes(db, layer):
+    records, summary, keys = db.execute(
+        f"""
+        Match (p:{layer})
+        RETURN p.nodeSymbol as nodeSymbol, p.class as class, p.center as center
+        """
+    )
+    return records, summary, keys
+
+def get_db_edges(db, edge_type, from_label, to_label):
+    query = f"""
+    MATCH (a:{from_label})-[:{edge_type}]->(b:{to_label})
+    RETURN a.nodeSymbol as from, b.nodeSymbol as to
+    """
+    records, summary, keys = db.execute(query)
+    return records, summary, keys
+
+def insert_edges_to_spark(G, records):
+    for record in records:
+        G.insert_edge(str_to_ns_value(record['from']), str_to_ns_value(record['to']))
+    return
+
+def str_to_ns_value(s):
+    p = parse.parse("{}({})", s)
+    key = p.fixed[0]
+    idx = int(p.fixed[1])
+    ns = spark_dsg.NodeSymbol(key, idx)
+    return ns.value
+
+def add_edges_from_db(db, G):
+    # Add the MeshPlace-MeshPlace edges
+    records, _, _ = get_db_edges(db, 'MESH_PLACE_CONNECTED', 'MeshPlace', 'MeshPlace') 
+    insert_edges_to_spark(G, records)
+    
+    # Add the Object-Object edges
+    records, _, _ = get_db_edges(db, 'OBJECT_CONNECTED', 'Object', 'Object') 
+    insert_edges_to_spark(G, records)
+
+    # Add the Place-Object edges
+    records, _, _ = get_db_edges(db, 'CONTAINS', 'Place', 'Object')
+    insert_edges_to_spark(G, records)
+
+    # Add the Place-Place edges
+    records, _, _ = get_db_edges(db, 'PLACE_CONNECTED', 'Place', 'Place')
+    insert_edges_to_spark(G, records)
+
+    # Add the Room-Place edges
+    records, _, _ = get_db_edges(db, 'CONTAINS', 'Room', 'Place')
+    insert_edges_to_spark(G, records)
+
+    # Add the Room-Room edges
+    records, _, _ = get_db_edges(db, 'ROOM_CONNECTED', 'Room', 'Room')
+    insert_edges_to_spark(G, records)
+
+    # Add the Building-Room edges
+    records, _, _ = get_db_edges(db, 'CONTAINS', 'Building', 'Room')
+    insert_edges_to_spark(G, records)
+
+    # Add the Building-Building edges
+    records, _, _ = get_db_edges(db, 'BUILDING_CONNECTED', 'Building', 'Building')
+    insert_edges_to_spark(G, records)
+    return
+
+def db_to_spark_mesh_place(mp, label_to_semantic_id):
+    attrs = spark_dsg.Place2dNodeAttributes()
+    attrs.name = mp['nodeSymbol']
+    attrs.position = mp['center']
+    attrs.semantic_label = label_to_semantic_id[mp['class']]
+    return attrs
+
+def db_to_spark_place(p, label_to_semantic_id):
+    attrs = spark_dsg.PlaceNodeAttributes()
+    attrs.name = p['nodeSymbol']
+    attrs.position = p['center']
+    return attrs
+
+def db_to_spark_object(o, label_to_semantic_id):
+    attrs = spark_dsg.ObjectNodeAttributes()
+    attrs.name = o['nodeSymbol']
+    attrs.position = o['center']
+    attrs.semantic_label = label_to_semantic_id[o['class']]
+    attrs.bounding_box = spark_dsg.BoundingBox([0.1,0.1,0.1])
+    return attrs
+
+def db_to_spark_room(r, room_label_to_id):
+    attrs = spark_dsg.RoomNodeAttributes()
+    attrs.name = r['nodeSymbol']
+    attrs.position = r['center']
+    attrs.semantic_label = label_to_semantic_id[r['class']]
+    attrs.bounding_box = spark_dsg.BoundingBox([0.1,0.1,0.1])
+    return attrs
+
+def db_to_spark_dsg(db, label_to_semantic_id, room_label_to_id):
+    # Initialize the spark_dsg scene graph object
+    layers = [
+        spark_dsg.DsgLayers.PLACES,
+        spark_dsg.DsgLayers.MESH_PLACES,
+        spark_dsg.DsgLayers.OBJECTS,
+        spark_dsg.DsgLayers.ROOMS,
+        spark_dsg.DsgLayers.BUILDINGS,
+    ]
+    G = spark_dsg.DynamicSceneGraph(layers)
+
+    # Add the MeshPlaces layer (Placed2d)
+    records, summary, keys = get_layer_nodes(db, 'MeshPlace')
+    for record in records:
+        attrs = db_to_spark_mesh_place(record, label_to_semantic_id)
+        G.add_node(
+            spark_dsg.DsgLayers.MESH_PLACES,
+            str_to_ns_value(record['nodeSymbol']),
+            attrs
+        )
+
+    # Add the Places layer (Places3d)
+    records, summary, keys = get_layer_nodes(db, 'Place')
+    for record in records:
+        attrs = db_to_spark_place(record, label_to_semantic_id)
+        G.add_node(
+            spark_dsg.DsgLayers.PLACES,
+            str_to_ns_value(record['nodeSymbol']),
+            attrs
+        )
+
+    # Add the Objects layer
+    records, summary, keys = get_layer_nodes(db, 'Object')
+    for record in records:
+        attrs = db_to_spark_object(record, label_to_semantic_id)
+        G.add_node(
+            spark_dsg.DsgLayers.OBJECTS,
+            str_to_ns_value(record['nodeSymbol']),
+            attrs
+        )
+
+    # Add the Rooms layer
+    records, summary, keys = get_layer_nodes(db, 'Room')
+    for record in records:
+        attrs = db_to_spark_room(record, room_label_to_id)
+        G.add_node(
+            spark_dsg.DsgLayers.ROOMS,
+            str_to_ns_value(record['nodeSymbol']),
+            attrs
+        )
+
+    # Add all of the edges (inter- and intra-layer)
+    add_edges_from_db(db, G)
+    return G
