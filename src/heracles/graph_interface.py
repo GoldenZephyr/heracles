@@ -104,7 +104,6 @@ def insert_mesh_places_to_db(db, mesh_places):
 
 
 def add_rooms_from_dsg(G, db):
-
     if "room_labelspace" in G.metadata:
         labelspace = G.metadata["room_labelspace"]
     else:
@@ -361,15 +360,15 @@ def db_to_spark_object(o, label_to_semantic_id):
     attrs.bounding_box = spark_dsg.BoundingBox([0.1,0.1,0.1])
     return attrs
 
-def db_to_spark_room(r, room_label_to_id):
+def db_to_spark_room(r, room_label_to_semantic_id):
     attrs = spark_dsg.RoomNodeAttributes()
     attrs.name = r['nodeSymbol']
     attrs.position = r['center']
-    attrs.semantic_label = label_to_semantic_id[r['class']]
+    attrs.semantic_label = room_label_to_semantic_id[r['class']]
     attrs.bounding_box = spark_dsg.BoundingBox([0.1,0.1,0.1])
     return attrs
 
-def db_to_spark_dsg(db, label_to_semantic_id, room_label_to_id):
+def db_to_spark_dsg(db, label_to_semantic_id, room_label_to_semantic_id):
     # Initialize the spark_dsg scene graph object
     layers = [
         spark_dsg.DsgLayers.PLACES,
@@ -413,7 +412,7 @@ def db_to_spark_dsg(db, label_to_semantic_id, room_label_to_id):
     # Add the Rooms layer
     records, summary, keys = get_layer_nodes(db, 'Room')
     for record in records:
-        attrs = db_to_spark_room(record, room_label_to_id)
+        attrs = db_to_spark_room(record, room_label_to_semantic_id)
         G.add_node(
             spark_dsg.DsgLayers.ROOMS,
             str_to_ns_value(record['nodeSymbol']),
