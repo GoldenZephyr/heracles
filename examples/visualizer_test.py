@@ -3,8 +3,6 @@ from importlib_resources import as_file, files
 import sys
 import time
 
-import zmq
-
 import spark_dsg
 import yaml
 import neo4j
