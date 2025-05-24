@@ -22,11 +22,13 @@ class Prompt:
 
     @classmethod
     def from_dict(cls, d, novel_instruction=None):
-        system = d["system"]
-        icl_pre = d["in_context_examples_preamble"]
-        icl_examples = [InContextExample.from_dict(e) for e in d["in_context_examples"]]
-        novel_instruction_preamble = d["novel_instruction_preamble"]
-        novel_instruction_ps = d["novel_instruction_ps"]
+        system = d.get("system", None)
+        icl_pre = d.get("in_context_examples_preamble", None)
+        icl_examples = [
+            InContextExample.from_dict(e) for e in d.get("in_context_examples", [])
+        ]
+        novel_instruction_preamble = d.get("novel_instruction_preamble", None)
+        novel_instruction_ps = d.get("novel_instruction_ps", None)
 
         if "novel_instruction" in d:
             novel_instruction = d["novel_instruction"]

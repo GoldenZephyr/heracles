@@ -5,7 +5,7 @@ import spark_dsg
 
 def add_objects_from_dsg(G, db):
     objects = [
-        obj_to_dict(G.metadata["labelspace"], o)
+        obj_to_dict(G.metadata.get()["labelspace"], o)
         for o in G.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes
     ]
     insert_objects_to_db(db, objects)
@@ -23,7 +23,6 @@ def obj_to_dict(node_classes, obj):
 
 
 def insert_objects_to_db(db, objects):
-
     return db.execute(
         """
     WITH $objects AS objects
@@ -80,9 +79,14 @@ def mesh_place_to_dict(node_classes, mesh_place):
 
 
 def add_mesh_places_from_dsg(G, db):
+    try:
+        mesh_place_layer = G.get_layer(spark_dsg.DsgLayers.MESH_PLACES)
+    except IndexError:
+        mesh_place_layer = G.get_layer(20)
+
     mesh_places = [
-        mesh_place_to_dict(G.metadata["labelspace"], p)
-        for p in G.get_layer(spark_dsg.DsgLayers.MESH_PLACES).nodes
+        mesh_place_to_dict(G.metadata.get()["labelspace"], p)
+        for p in mesh_place_layer.nodes
     ]
     insert_mesh_places_to_db(db, mesh_places)
 
@@ -103,9 +107,8 @@ def insert_mesh_places_to_db(db, mesh_places):
 
 
 def add_rooms_from_dsg(G, db):
-
-    if "room_labelspace" in G.metadata:
-        labelspace = G.metadata["room_labelspace"]
+    if "room_labelspace" in G.metadata.get():
+        labelspace = G.metadata.get()["room_labelspace"]
     else:
         labelspace = {"0": "Unknown"}
 
@@ -128,7 +131,6 @@ def room_to_dict(node_classes, room):
 
 
 def insert_rooms_to_db(db, rooms):
-
     return db.execute(
         """
     WITH $rooms AS rooms
@@ -173,9 +175,8 @@ def insert_buildings_to_db(db, buildings):
 
 
 def add_edges_from_dsg(G, db):
-
     print("Adding Edges")
-    layer_id_to_layer_str = G.metadata["LayerIdToLayerStr"]
+    layer_id_to_layer_str = G.metadata.get()["LayerIdToLayerStr"]
 
     object_object_edges = []
     for n in G.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes:
@@ -198,7 +199,7 @@ def add_edges_from_dsg(G, db):
 
         for cid in n.children():
             to_ns = str(spark_dsg.NodeSymbol(cid))
-            to_layer_id = G.get_node(cid).layer
+            to_layer_id = G.get_node(cid).layer.layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
             assert (
                 to_layer_str == "Object"
@@ -211,7 +212,11 @@ def add_edges_from_dsg(G, db):
     print("Finished Place Edges")
 
     mp_mp_edges = []
-    for n in G.get_layer(spark_dsg.DsgLayers.MESH_PLACES).nodes:
+    try:
+        mesh_place_layer =  G.get_layer(spark_dsg.DsgLayers.MESH_PLACES)
+    except IndexError:
+        mesh_place_layer =  G.get_layer(20)
+    for n in mesh_place_layer.nodes:
         from_ns = str(n.id)
         for sid in n.siblings():
             to_ns = str(spark_dsg.NodeSymbol(sid))
@@ -266,7 +271,6 @@ def add_edges_from_dsg(G, db):
 
 
 def insert_edges(db, edge_type, from_label, to_label, connections):
-
     query = f"""
     WITH $connections AS connections
     UNWIND connections AS connection

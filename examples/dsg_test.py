@@ -22,7 +22,6 @@ from heracles.graph_interface import (
 
 
 def try_drop_index(db, index_name):
-
     try:
         db.execute(f"DROP INDEX {index_name}")
     except neo4j.exceptions.DatabaseError:
@@ -50,23 +49,41 @@ else:
 summarize_dsg(G)
 
 
-if G.metadata == {}:
-    with as_file(
-        files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")
-    ) as path:
-        with open(str(path), "r") as fo:
-            labelspace = yaml.safe_load(fo)
-    id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
-    G.add_metadata({"labelspace": id_to_label})
+with as_file(files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")) as path:
+    with open(str(path), "r") as fo:
+        labelspace = yaml.safe_load(fo)
+id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
+G.metadata.add({"labelspace": id_to_label})
+
+region_ls = {
+    0: "unknown",
+    1: "road",
+    2: "field",
+    3: "shelter",
+    4: "indoor",
+    5: "stairs",
+    6: "sidewalk",
+    7: "path",
+    8: "boundary",
+    9: "shore",
+    10: "ground",
+    11: "dock",
+    12: "parking",
+    13: "footing",
+}
+G.metadata.add({"room_labelspace": region_ls})
+
+
 
 layers = {
-    spark_dsg.DsgLayers.OBJECTS: "Object",
-    spark_dsg.DsgLayers.BUILDINGS: "Building",
-    spark_dsg.DsgLayers.MESH_PLACES: "MeshPlace",
-    spark_dsg.DsgLayers.PLACES: "Place",
-    spark_dsg.DsgLayers.ROOMS: "Room",
+    2: "Object",
+    5: "Building",
+    20: "MeshPlace",
+    3: "Place",
+    4: "Room",
 }
-G.add_metadata({"LayerIdToLayerStr": layers})
+
+G.metadata.add({"LayerIdToLayerStr": layers})
 
 
 with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
