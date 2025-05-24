@@ -20,7 +20,6 @@ from heracles.graph_interface import (
 
 
 def try_drop_index(db, index_name):
-
     try:
         db.execute(f"DROP INDEX {index_name}")
     except neo4j.exceptions.DatabaseError:
@@ -34,28 +33,25 @@ def add_dsg_metadata(G):
         with open(str(path), "r") as fo:
             labelspace = yaml.safe_load(fo)
     id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
-    G.add_metadata({"labelspace": id_to_label})
+    G.metadata.add({"labelspace": id_to_label})
 
     layers = {
-        spark_dsg.DsgLayers.OBJECTS: "Object",
-        spark_dsg.DsgLayers.BUILDINGS: "Building",
-        spark_dsg.DsgLayers.MESH_PLACES: "MeshPlace",
-        spark_dsg.DsgLayers.PLACES: "Place",
-        spark_dsg.DsgLayers.ROOMS: "Room",
+        2: "Object",
+        5: "Building",
+        20: "MeshPlace",
+        3: "Place",
+        4: "Room",
     }
-    G.add_metadata({"LayerIdToLayerStr": layers})
+    G.metadata.add({"LayerIdToLayerStr": layers})
 
 
 def build_test_dsg():
-    G = spark_dsg.DynamicSceneGraph(
-        [
-            spark_dsg.DsgLayers.OBJECTS,
-            spark_dsg.DsgLayers.PLACES,
-            spark_dsg.DsgLayers.MESH_PLACES,
-            spark_dsg.DsgLayers.ROOMS,
-            spark_dsg.DsgLayers.BUILDINGS,
-        ]
-    )
+    G = spark_dsg.DynamicSceneGraph()
+    G.add_layer(2, "a", spark_dsg.DsgLayers.AGENTS)
+    G.add_layer(3, "p", spark_dsg.DsgLayers.PLACES)
+    G.add_layer(4, "R", spark_dsg.DsgLayers.ROOMS)
+    G.add_layer(5, "B", spark_dsg.DsgLayers.BUILDINGS)
+    G.add_layer(20, "P", spark_dsg.DsgLayers.MESH_PLACES)
 
     room = spark_dsg.RoomNodeAttributes()
     room.position = np.array([0, 0, 0])
@@ -116,7 +112,6 @@ def build_test_dsg():
 
 @pytest.fixture(scope="module")
 def populated_db():
-
     G = build_test_dsg()
     add_dsg_metadata(G)
 
@@ -173,7 +168,6 @@ def populated_db():
 
 
 def test_rooms(populated_db):
-
     q = populated_db.query(
         """MATCH (r: Room {nodeSymbol: "R(0)"}) RETURN r.nodeSymbol as ns, r.center as center"""
     )
@@ -183,7 +177,6 @@ def test_rooms(populated_db):
 
 
 def test_places(populated_db):
-
     q = populated_db.query("""MATCH (p: Place {nodeSymbol: "p(0)"}) RETURN p""")
     assert np.all(np.isclose(np.array([-1, 0, 0]), q[0]["p"]["center"]))
 
@@ -192,7 +185,6 @@ def test_places(populated_db):
 
 
 def test_mesh_places(populated_db):
-
     q = populated_db.query("""MATCH (p: MeshPlace) RETURN p""")
     assert len(q) == 2
 
