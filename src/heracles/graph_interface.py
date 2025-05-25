@@ -14,7 +14,7 @@ def add_objects_from_dsg(G, db):
 def obj_to_dict(node_classes, obj):
     attrs = obj.attributes
     d = {}
-    d["nodeSymbol"] = str(obj.id)
+    d["nodeSymbol"] = obj.id.str(True)
     d["x"] = attrs.position[0]
     d["y"] = attrs.position[1]
     d["z"] = attrs.position[2]
@@ -40,7 +40,7 @@ def insert_objects_to_db(db, objects):
 def place_to_dict(place):
     attrs = place.attributes
     d = {}
-    d["nodeSymbol"] = str(place.id)
+    d["nodeSymbol"] = place.id.str(True)
     d["x"] = attrs.position[0]
     d["y"] = attrs.position[1]
     d["z"] = attrs.position[2]
@@ -70,7 +70,7 @@ def insert_places_to_db(db, places):
 def mesh_place_to_dict(node_classes, mesh_place):
     attrs = mesh_place.attributes
     d = {}
-    d["nodeSymbol"] = str(mesh_place.id)
+    d["nodeSymbol"] = mesh_place.id.str(True)
     d["x"] = attrs.position[0]
     d["y"] = attrs.position[1]
     d["z"] = attrs.position[2]
@@ -122,7 +122,7 @@ def add_rooms_from_dsg(G, db):
 def room_to_dict(node_classes, room):
     attrs = room.attributes
     d = {}
-    d["nodeSymbol"] = str(room.id)
+    d["nodeSymbol"] = room.id.str(True)
     d["x"] = attrs.position[0]
     d["y"] = attrs.position[1]
     d["z"] = attrs.position[2]
@@ -148,7 +148,7 @@ def insert_rooms_to_db(db, rooms):
 def building_to_dict(building):
     attrs = building.attributes
     d = {}
-    d["nodeSymbol"] = str(building.id)
+    d["nodeSymbol"] = building.id.str(True)
     d["x"] = attrs.position[0]
     d["y"] = attrs.position[1]
     d["z"] = attrs.position[2]
@@ -180,9 +180,9 @@ def add_edges_from_dsg(G, db):
 
     object_object_edges = []
     for n in G.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes:
-        from_ns = str(n.id)
+        from_ns = n.id.str(True)
         for sid in n.siblings():
-            to_ns = str(spark_dsg.NodeSymbol(sid))
+            to_ns = spark_dsg.NodeSymbol(sid).str(True)
             object_object_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "OBJECT_CONNECTED", "Object", "Object", object_object_edges)
@@ -192,13 +192,13 @@ def add_edges_from_dsg(G, db):
     place_place_edges = []
     place_object_edges = []
     for n in G.get_layer(spark_dsg.DsgLayers.PLACES).nodes:
-        from_ns = str(n.id)
+        from_ns = n.id.str(True)
         for sid in n.siblings():
-            to_ns = str(spark_dsg.NodeSymbol(sid))
+            to_ns = spark_dsg.NodeSymbol(sid).str(True)
             place_place_edges.append({"from": from_ns, "to": to_ns})
 
         for cid in n.children():
-            to_ns = str(spark_dsg.NodeSymbol(cid))
+            to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer.layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
             assert (
@@ -213,13 +213,13 @@ def add_edges_from_dsg(G, db):
 
     mp_mp_edges = []
     try:
-        mesh_place_layer =  G.get_layer(spark_dsg.DsgLayers.MESH_PLACES)
+        mesh_place_layer = G.get_layer(spark_dsg.DsgLayers.MESH_PLACES)
     except IndexError:
-        mesh_place_layer =  G.get_layer(20)
+        mesh_place_layer = G.get_layer(20)
     for n in mesh_place_layer.nodes:
-        from_ns = str(n.id)
+        from_ns = n.id.str(True)
         for sid in n.siblings():
-            to_ns = str(spark_dsg.NodeSymbol(sid))
+            to_ns = spark_dsg.NodeSymbol(sid).str(True)
             mp_mp_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "MESH_PLACE_CONNECTED", "MeshPlace", "MeshPlace", mp_mp_edges)
@@ -228,12 +228,12 @@ def add_edges_from_dsg(G, db):
     room_room_edges = []
     room_place_edges = []
     for n in G.get_layer(spark_dsg.DsgLayers.ROOMS).nodes:
-        from_ns = str(n.id)
+        from_ns = n.id.str(True)
         for sid in n.siblings():
-            to_ns = str(spark_dsg.NodeSymbol(sid))
+            to_ns = spark_dsg.NodeSymbol(sid).str(True)
             room_room_edges.append({"from": from_ns, "to": to_ns})
         for cid in n.children():
-            to_ns = str(spark_dsg.NodeSymbol(cid))
+            to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
             assert (
@@ -250,12 +250,12 @@ def add_edges_from_dsg(G, db):
     building_room_edges = []
 
     for n in G.get_layer(spark_dsg.DsgLayers.BUILDINGS).nodes:
-        from_ns = str(n.id)
+        from_ns = n.id.str(True)
         for sid in n.siblings():
-            to_ns = str(spark_dsg.NodeSymbol(sid))
+            to_ns = spark_dsg.NodeSymbol(sid).str(True)
             building_building_edges.append({"from": from_ns, "to": to_ns})
         for cid in n.children():
-            to_ns = str(spark_dsg.NodeSymbol(cid))
+            to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
             assert (
