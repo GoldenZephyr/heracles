@@ -2,7 +2,7 @@ from importlib.resources import as_file, files
 import openai
 import os
 import yaml
-from prompt_schema import Prompt
+from heracles.prompt_schema import Prompt
 import heracles.resources
 
 

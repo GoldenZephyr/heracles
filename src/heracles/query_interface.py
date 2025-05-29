@@ -64,3 +64,8 @@ class Neo4jWrapper:
         """A simplified query interface for use with LLMs"""
         records, _, _ = self.driver.execute_query(query, database_=self.db_name)
         return [r.data() for r in records]
+
+    def query_with_notifications(self, query):
+        records, summary, _ = self.driver.execute_query(query, database_=self.db_name)
+        return [r.data() for r in records], summary.notifications
+        
