@@ -1,4 +1,4 @@
-from importlib.resources import as_file, files
+from importlib_resources import as_file, files
 import openai
 import os
 import yaml
@@ -6,12 +6,15 @@ from prompt_schema import Prompt
 import heracles.resources
 
 
-key = os.getenv("DSG_OPENAI_API_KEY")
+key = os.getenv("OPENAI_API_KEY")
 
 client = openai.OpenAI(
     api_key=key,
     timeout=10,
 )
+
+import pdb
+breakpoint()
 
 with as_file(files(heracles.resources).joinpath("dsgdb_prompts.yaml")) as path:
     with open(str(path), "r") as fo:
@@ -20,7 +23,7 @@ with as_file(files(heracles.resources).joinpath("dsgdb_prompts.yaml")) as path:
 prompt_obj = Prompt.from_dict(prompt_yaml)
 print("Base prompt: ", prompt_obj)
 
-prompt = prompt_obj.to_openai_json("Find all objects that are near a box and a bag")
+prompt = prompt_obj.to_openai_json("Create a large room, roughly 5m by 10m, that contains a big table in the middle with 6 chairs located around the table.")
 
 
 print(prompt)

@@ -1,6 +1,8 @@
 import spark_dsg
 import parse
 
+import pdb
+
 # Inserting objects
 
 
@@ -16,21 +18,26 @@ def obj_to_dict(node_classes, obj):
     attrs = obj.attributes
     d = {}
     d["nodeSymbol"] = str(obj.id)
-    d["x"] = attrs.position[0]
-    d["y"] = attrs.position[1]
-    d["z"] = attrs.position[2]
+    d["pos_x"] = attrs.position[0]
+    d["pos_y"] = attrs.position[1]
+    d["pos_z"] = attrs.position[2]
+    d["bbox_x"] = attrs.bounding_box.world_P_center[0]
+    d["bbox_y"] = attrs.bounding_box.world_P_center[1]
+    d["bbox_z"] = attrs.bounding_box.world_P_center[2]
+    d["bbox_l"] = attrs.bounding_box.dimensions[0]
+    d["bbox_w"] = attrs.bounding_box.dimensions[1]
+    d["bbox_h"] = attrs.bounding_box.dimensions[2]
     d["class"] = node_classes[str(attrs.semantic_label)]
     return d
 
 
 def insert_objects_to_db(db, objects):
-
     return db.execute(
-        """
+    """
     WITH $objects AS objects
     UNWIND objects AS object
-    WITH point({x: object.x, y: object.y, z: object.z}) AS p3d, object
-    MERGE (:Object {nodeSymbol: object.nodeSymbol, center: p3d, class: object.class})
+    WITH point({x: object.pos_x, y: object.pos_y, z: object.pos_z}) AS p3d, point({x: object.bbox_x, y: object.bbox_y, z: object.bbox_z}) AS bb3d, point({x: object.bbox_l, y: object.bbox_w, z: object.bbox_h}) AS bbdim, object
+    MERGE (:Object {nodeSymbol: object.nodeSymbol, center: p3d, bbox_center: bb3d, bbox_dim: bbdim, class: object.class})
     """,
         objects=objects,
     )
@@ -277,12 +284,20 @@ def insert_edges(db, edge_type, from_label, to_label, connections):
     return ret
 
 def get_layer_nodes(db, layer):
-    records, summary, keys = db.execute(
-        f"""
-        Match (p:{layer})
-        RETURN p.nodeSymbol as nodeSymbol, p.class as class, p.center as center
-        """
-    )
+    if layer == "Object":
+      records, summary, keys = db.execute(
+          f"""
+          Match (p:{layer})
+          RETURN p.nodeSymbol as nodeSymbol, p.class as class, p.center as center, p.bbox_center as bbox_center, p.bbox_dim as bbox_dim
+          """
+      )
+    else:
+      records, summary, keys = db.execute(
+          f"""
+          Match (p:{layer})
+          RETURN p.nodeSymbol as nodeSymbol, p.class as class, p.center as center
+          """
+      )
     return records, summary, keys
 
 def get_db_edges(db, edge_type, from_label, to_label):
@@ -357,7 +372,10 @@ def db_to_spark_object(o, label_to_semantic_id):
     attrs.name = o['nodeSymbol']
     attrs.position = o['center']
     attrs.semantic_label = label_to_semantic_id[o['class']]
-    attrs.bounding_box = spark_dsg.BoundingBox([0.1,0.1,0.1])
+    attrs.bounding_box = spark_dsg.BoundingBox(
+      [o["bbox_dim"][0], o["bbox_dim"][1], o["bbox_dim"][2]], # dimensions
+      [o["bbox_center"][0], o["bbox_center"][1], o["bbox_center"][2]], # center
+    )
     return attrs
 
 def db_to_spark_room(r, room_label_to_semantic_id):

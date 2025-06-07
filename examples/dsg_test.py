@@ -35,19 +35,21 @@ URI = "neo4j://127.0.0.1:7687"
 AUTH = ("neo4j", "neo4j_pw")
 
 
-if len(sys.argv) > 1:
-    print(f"Trying to load {sys.argv[1]}")
-    G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
-    print("Success!")
-else:
-    # fn = "scene_graph_full_loop_2.json"
-    fn = "t3_w0_ths2_fused.json"
-    print(f"Trying to load {fn}")
-    G = spark_dsg.DynamicSceneGraph.load(fn)
-    print("Success!")
+#if len(sys.argv) > 1:
+#    print(f"Trying to load {sys.argv[1]}")
+#    G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
+#    print("Success!")
+#else:
+#    # fn = "scene_graph_full_loop_2.json"
+#    fn = "t3_w0_ths2_fused.json"
+#    print(f"Trying to load {fn}")
+#    G = spark_dsg.DynamicSceneGraph.load(fn)
+#    print("Success!")
+
+G = spark_dsg.DynamicSceneGraph.load("/heracles/heracles/src/heracles/resources/scene_graphs/west_point_fused_map_wregions_labelspace.json")
 
 
-summarize_dsg(G)
+#summarize_dsg(G)
 
 
 if G.metadata == {}:

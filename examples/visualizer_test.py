@@ -40,7 +40,7 @@ if len(sys.argv) > 1:
     G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
     print("Success!")
 else:
-    fn = "/heracles/src/heracles/resources/scene_graphs/dsg_from_jared_0.json"
+    fn = "/heracles/src/heracles/resources/scene_graphs/dsg_from_jared_1.json"
     print(f"Trying to load {fn}")
     G = spark_dsg.DynamicSceneGraph.load(fn)
     print("Success!")
@@ -109,22 +109,24 @@ with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
     add_objects_from_dsg(G, db)
     add_places_from_dsg(G, db)
     add_mesh_places_from_dsg(G, db)
+    add_rooms_from_dsg(G, db)
     add_buildings_from_dsg(G, db)
     add_edges_from_dsg(G, db)
     # Convert from the db back to spark
     label_to_id = {v : k for k,v in id_to_label.items()}
-    new_G = db_to_spark_dsg(db, label_to_id, label_to_id)
+    room_label_to_id = {v : k for k,v in room_id_to_label.items()}
+    new_G = db_to_spark_dsg(db, label_to_id, room_label_to_id)
     # Visualize the scene graph
     viz = spark_dsg.open3d_visualization.DsgVisualizer(url="tcp://127.0.0.1:8001")
     time.sleep(0.5)
     viz.update_graph(new_G, force=True)
 
     # Pause, then add the rooms and update the visualization
-    input("Press enter to update the scene graph")
-    add_rooms_from_dsg(G, db)
-    add_edges_from_dsg(G, db)
-    new_G = db_to_spark_dsg(db, label_to_id, label_to_id)
-    viz.update_graph(new_G, force=True)
+    #input("Press enter to update the scene graph")
+    #add_rooms_from_dsg(G, db)
+    #add_edges_from_dsg(G, db)
+    #new_G = db_to_spark_dsg(db, label_to_id, label_to_id)
+    #viz.update_graph(new_G, force=True)
 
     # By creating the DsgVisualizer here, we can directly control updates. Below is how to do render a scene graph once.
     # spark_dsg.render_to_open3d(new_G, block=False)
