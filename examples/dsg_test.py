@@ -39,8 +39,8 @@ if len(sys.argv) > 1:
     G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
     print("Success!")
 else:
-    # fn = "scene_graph_full_loop_2.json"
-    fn = "t3_w0_ths2_fused.json"
+    import os
+    fn = os.getenv("CONVERSION_TEST_DSG_FILENAME")
     print(f"Trying to load {fn}")
     G = spark_dsg.DynamicSceneGraph.load(fn)
     print("Success!")
@@ -54,6 +54,16 @@ with as_file(files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")) 
         labelspace = yaml.safe_load(fo)
 id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
 G.metadata.add({"labelspace": id_to_label})
+
+#region_ls = {
+#0:"unknown",
+#1:"sidewalk",
+#2:"road",
+#3:"courtyard",
+#4:"offroad",
+#5:"field",
+#6:"building",
+#}
 
 region_ls = {
     0: "unknown",
@@ -83,7 +93,7 @@ layers = {
     4: "Room",
 }
 
-G.metadata.add({"LayerIdToLayerStr": layers})
+G.metadata.add({"LayerIdToHeraclesLayerStr": layers})
 
 
 with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
@@ -135,7 +145,7 @@ with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
 
     # find the boxes
     records, summary, keys = db.execute(
-        """MATCH (p:Object {class: "box"}) 
+        """MATCH (p:Object {class: "box"})
         RETURN p.nodeSymbol AS nodeSymbol, p.class AS class, p.center AS center""",
     )
 
