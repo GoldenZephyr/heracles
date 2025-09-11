@@ -19,6 +19,9 @@ from heracles.graph_interface import (
     db_to_spark_dsg,
 )
 
+def compare_mesh_places(mesh_place_a, mesh_place_b):
+    pass
+
 def compare_objects(object_a, object_b):
     assert(object_a.id == object_b.id)
     assert(object_a.layer == object_b.layer)
@@ -44,11 +47,18 @@ def compare_spark_dsgs(graph_a, graph_b):
         assert(layer_a.num_nodes() == layer_b.num_nodes())
         assert(layer_a.num_edges() == layer_b.num_edges())
 
+    # Comapre the MeshPlace nodes
+    if graph_a.has_layer(spark_dsg.DsgLayers.MESH_PLACES):
+        mesh_place_nodes = graph_a.get_layer(spark_dsg.DsgLayers.MESH_PLACES).nodes
+    else:
+        mesh_place_nodes = graph_a.get_layer(20).nodes # Magic
+    for mesh_place_a in mesh_place_nodes:
+        compare_mesh_places(mesh_place_a, graph_b.get_node(mesh_place_a.id))
 
-    # Enforce that each layer has the same number of nodes
-    # Compare the object nodes
+    # Compare the Object nodes
     for object_a in graph_a.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes:
         compare_objects(object_a, graph_b.get_node(object_a.id))
+
     return True
 
 # IP / Port for database

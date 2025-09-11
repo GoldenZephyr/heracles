@@ -1,0 +1,11 @@
+---
+invalid_labels: [0]
+label_names:
+  - {label: 0, name: unknown, name_descriptive: unknown}
+  - {label: 1, name: sidewalk, name_descriptive: a sidewalk}
+  - {label: 2, name: road, name_descriptive: a road}
+  - {label: 3, name: courtyard, name_descriptive: a courtyard with seats and trees}
+  - {label: 4, name: offroad, name_descriptive: an offroad area with dirt and rocks}
+  - {label: 5, name: field, name_descriptive: a grassy field}
+  - {label: 6, name: building, name_descriptive: the inside or outside edge of a building}
+  

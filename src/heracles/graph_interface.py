@@ -55,15 +55,25 @@ def obj_to_dict(node_classes, obj):
     d["bbox_w"] = attrs.bounding_box.dimensions[1]
     d["bbox_h"] = attrs.bounding_box.dimensions[2]
     d["class"] = node_classes[str(attrs.semantic_label)]
+    d["name"] = attrs.name # SemanticNodeAttribute::name
+    #d["color_r"] = attrs.color[0]
+    #d["color_g"] = attrs.color[1]
+    #d["color_b"] = attrs.color[2]
     return d
 
 def insert_objects_to_db(db, objects):
     return db.execute(
+#    f"""
+#    WITH $objects AS objects
+#    UNWIND objects AS object
+#    WITH point({{x: object.pos_x, y: object.pos_y, z: object.pos_z}}) AS p3d, point({{x: object.bbox_x, y: object.bbox_y, z: object.bbox_z}}) AS bb3d, point({{x: object.bbox_l, y: object.bbox_w, z: object.bbox_h}}) AS bbdim, object
+#    MERGE (:{constants.OBJECTS} {{nodeSymbol: object.nodeSymbol, center: p3d, bbox_center: bb3d, bbox_dim: bbdim, class: object.class}})
+#    """,
     f"""
     WITH $objects AS objects
     UNWIND objects AS object
-    WITH point({{x: object.pos_x, y: object.pos_y, z: object.pos_z}}) AS p3d, point({{x: object.bbox_x, y: object.bbox_y, z: object.bbox_z}}) AS bb3d, point({{x: object.bbox_l, y: object.bbox_w, z: object.bbox_h}}) AS bbdim, object
-    MERGE (:{constants.OBJECTS} {{nodeSymbol: object.nodeSymbol, center: p3d, bbox_center: bb3d, bbox_dim: bbdim, class: object.class}})
+    WITH point({{x: object.pos_x, y: object.pos_y, z: object.pos_z}}) AS p3d, point({{x: object.bbox_x, y: object.bbox_y, z: object.bbox_z}}) AS bb3d, point({{x: object.bbox_l, y: object.bbox_w, z: object.bbox_h}}) AS bbdim,  object
+    MERGE (:{constants.OBJECTS} {{nodeSymbol: object.nodeSymbol, center: p3d, bbox_center: bb3d, bbox_dim: bbdim, class: object.class, name: object.name}})
     """,
         objects=objects,
     )
@@ -318,7 +328,7 @@ def get_layer_nodes(db, layer):
       records, summary, keys = db.execute(
           f"""
           Match (p:{layer})
-          RETURN p.nodeSymbol as nodeSymbol, p.class as class, p.center as center, p.bbox_center as bbox_center, p.bbox_dim as bbox_dim
+          RETURN p.nodeSymbol as nodeSymbol, p.class as class, p.center as center, p.bbox_center as bbox_center, p.bbox_dim as bbox_dim, p.name as name
           """
       )
     else:
@@ -407,7 +417,7 @@ def db_to_spark_object(o, label_to_semantic_id):
     attrs.name = o['nodeSymbol']
     attrs.position = o['center']
     attrs.semantic_label = label_to_semantic_id[o['class']]
-    attrs.name = o['class']
+    attrs.name = o['name']
     attrs.bounding_box = spark_dsg.BoundingBox(
       [o["bbox_dim"][0], o["bbox_dim"][1], o["bbox_dim"][2]], # dimensions
       [o["bbox_center"][0], o["bbox_center"][1], o["bbox_center"][2]], # center
@@ -461,49 +471,3 @@ def db_to_spark_dsg(db, spark_layer_id_to_layer_name, label_to_semantic_id, room
     # Add all of the edges
     add_edges_from_db(db, new_scene_graph)
     return new_scene_graph
-           
-
-#    # Add the MeshPlaces layer (Places2d)
-#    records, summary, keys = get_layer_nodes(db, 'MeshPlace')
-#    for record in records:
-#        attrs = db_to_spark_mesh_place(record, label_to_semantic_id)
-#        G.add_node(
-#            spark_dsg.DsgLayers.MESH_PLACES,
-#            str_to_ns_value(record['nodeSymbol']),
-#            attrs
-#        )
-#
-#
-#    # Add the Places layer (Places3d)
-#    records, summary, keys = get_layer_nodes(db, 'Place')
-#    for record in records:
-#        attrs = db_to_spark_place(record, label_to_semantic_id)
-#        G.add_node(
-#            spark_dsg.DsgLayers.PLACES,
-#            str_to_ns_value(record['nodeSymbol']),
-#            attrs
-#        )
-#
-#    # Add the Objects layer
-#    records, summary, keys = get_layer_nodes(db, 'Object')
-#    for record in records:
-#        attrs = db_to_spark_object(record, label_to_semantic_id)
-#        G.add_node(
-#            spark_dsg.DsgLayers.OBJECTS,
-#            str_to_ns_value(record['nodeSymbol']),
-#            attrs
-#        )
-#
-#    # Add the Rooms layer
-#    records, summary, keys = get_layer_nodes(db, 'Room')
-#    for record in records:
-#        attrs = db_to_spark_room(record, room_label_to_semantic_id)
-#        G.add_node(
-#            spark_dsg.DsgLayers.ROOMS,
-#            str_to_ns_value(record['nodeSymbol']),
-#            attrs
-#        )
-#
-#    # Add all of the edges (inter- and intra-layer)
-#    add_edges_from_db(db, G)
-#    return G

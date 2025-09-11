@@ -1,0 +1,17 @@
+---
+invalid_labels: []
+label_names:
+  - {label: 0, name: unknown, name_descriptive: an unknown region}
+  - {label: 1, name: road, name_descriptive: a road}
+  - {label: 2, name: field, name_descriptive: a field with grass}
+  - {label: 3, name: shelter, name_descriptive: a covered area outside}
+  - {label: 4, name: indoor, name_descriptive: a place insider of a building}
+  - {label: 5, name: stairs, name_descriptive: a staircase or stairwell}
+  - {label: 6, name: sidewalk, name_descriptive: a sidewalk}
+  - {label: 7, name: path, name_descriptive: a path}
+  - {label: 8, name: boundary, name_descriptive: a boundary}
+  - {label: 9, name: shore, name_descriptive: a shore of a body of water}
+  - {label: 10, name: ground, name_descriptive: a terrain out}
+  - {label: 11, name: dock, name_descriptive: a dock}
+  - {label: 12, name: parking, name_descriptive: an area with parked cars}
+  - {label: 13, name: footing, name_descriptive: a place along the outside of a building or shelter}
