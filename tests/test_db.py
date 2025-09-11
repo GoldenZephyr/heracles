@@ -1,22 +1,22 @@
 from importlib.resources import as_file, files
-import pytest
-import numpy as np
-import neo4j
 
+import neo4j
+import numpy as np
+import pytest
 import spark_dsg
 import yaml
 
 import heracles
 import heracles.resources
-from heracles.query_interface import Neo4jWrapper
 from heracles.graph_interface import (
-    add_objects_from_dsg,
-    add_places_from_dsg,
-    add_mesh_places_from_dsg,
-    add_rooms_from_dsg,
     add_buildings_from_dsg,
     add_edges_from_dsg,
+    add_mesh_places_from_dsg,
+    add_objects_from_dsg,
+    add_places_from_dsg,
+    add_rooms_from_dsg,
 )
+from heracles.query_interface import Neo4jWrapper
 
 
 def try_drop_index(db, index_name):

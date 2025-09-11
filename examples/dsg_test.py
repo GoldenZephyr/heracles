@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-from importlib.resources import as_file, files
 import sys
 import time
+from importlib.resources import as_file, files
 
+import neo4j
 import spark_dsg
 import yaml
-import neo4j
 
 import heracles
-from heracles.dsg_utils import summarize_dsg
 import heracles.resources
-from heracles.query_interface import Neo4jWrapper
+from heracles.dsg_utils import summarize_dsg
 from heracles.graph_interface import (
-    add_objects_from_dsg,
-    add_places_from_dsg,
-    add_mesh_places_from_dsg,
-    add_rooms_from_dsg,
     add_buildings_from_dsg,
     add_edges_from_dsg,
+    add_mesh_places_from_dsg,
+    add_objects_from_dsg,
+    add_places_from_dsg,
+    add_rooms_from_dsg,
 )
+from heracles.query_interface import Neo4jWrapper
 
 
 def try_drop_index(db, index_name):
@@ -40,6 +40,7 @@ if len(sys.argv) > 1:
     print("Success!")
 else:
     import os
+
     fn = os.getenv("CONVERSION_TEST_DSG_FILENAME")
     print(f"Trying to load {fn}")
     G = spark_dsg.DynamicSceneGraph.load(fn)
@@ -55,15 +56,15 @@ with as_file(files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")) 
 id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
 G.metadata.add({"labelspace": id_to_label})
 
-#region_ls = {
-#0:"unknown",
-#1:"sidewalk",
-#2:"road",
-#3:"courtyard",
-#4:"offroad",
-#5:"field",
-#6:"building",
-#}
+# region_ls = {
+# 0:"unknown",
+# 1:"sidewalk",
+# 2:"road",
+# 3:"courtyard",
+# 4:"offroad",
+# 5:"field",
+# 6:"building",
+# }
 
 region_ls = {
     0: "unknown",
@@ -82,7 +83,6 @@ region_ls = {
     13: "footing",
 }
 G.metadata.add({"room_labelspace": region_ls})
-
 
 
 layers = {

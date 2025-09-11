@@ -12,17 +12,79 @@ with GraphDatabase.driver(URI, auth=AUTH) as driver:
     )
 
     # TODO(npolshak): Figure out how to load data in a more sane way
-    parameters = [ 
-        {"nodeSymbol": "p(29)", "x": 15, "y": 10, "z": 0, "layer": "surface_place", "class": "road"},
-        {"nodeSymbol": "p(30)", "x": 20, "y": 10, "z": 0, "layer": "surface_place", "class": "road"},
-        {"nodeSymbol": "p(31)", "x": 25, "y": 10, "z": 0, "layer": "surface_place", "class": "road"},
-        {"nodeSymbol": "p(32)", "x": 30, "y": 10, "z": 0, "layer": "surface_place", "class": "road"},
-        {"nodeSymbol": "p(33)", "x": 35, "y": 10, "z": 0, "layer": "surface_place", "class": "road"},
-        {"nodeSymbol": "p(34)", "x": 25, "y": 15, "z": 0, "layer": "surface_place", "class": "gravel"},
-        {"nodeSymbol": "p(35)", "x": 25, "y": 5, "z": 0, "layer": "surface_place", "class": "gravel"},
-        {"nodeSymbol": "o(1)", "x": 30.5, "y": 10, "z": 0, "layer": "object", "class": "bag"},
-        {"nodeSymbol": "o(2)", "x": 25.5, "y": 15, "z": 0, "layer": "object", "class": "book"},
-        
+    parameters = [
+        {
+            "nodeSymbol": "p(29)",
+            "x": 15,
+            "y": 10,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "road",
+        },
+        {
+            "nodeSymbol": "p(30)",
+            "x": 20,
+            "y": 10,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "road",
+        },
+        {
+            "nodeSymbol": "p(31)",
+            "x": 25,
+            "y": 10,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "road",
+        },
+        {
+            "nodeSymbol": "p(32)",
+            "x": 30,
+            "y": 10,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "road",
+        },
+        {
+            "nodeSymbol": "p(33)",
+            "x": 35,
+            "y": 10,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "road",
+        },
+        {
+            "nodeSymbol": "p(34)",
+            "x": 25,
+            "y": 15,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "gravel",
+        },
+        {
+            "nodeSymbol": "p(35)",
+            "x": 25,
+            "y": 5,
+            "z": 0,
+            "layer": "surface_place",
+            "class": "gravel",
+        },
+        {
+            "nodeSymbol": "o(1)",
+            "x": 30.5,
+            "y": 10,
+            "z": 0,
+            "layer": "object",
+            "class": "bag",
+        },
+        {
+            "nodeSymbol": "o(2)",
+            "x": 25.5,
+            "y": 15,
+            "z": 0,
+            "layer": "object",
+            "class": "book",
+        },
     ]
     for param in parameters:
         results = driver.execute_query(
@@ -84,7 +146,6 @@ with GraphDatabase.driver(URI, auth=AUTH) as driver:
         )
         print(f"Query counters: {summary2.counters}.")
 
-
     # list of edges
     obj_parameters = [
         ("o(1)", "p(32)"),
@@ -104,10 +165,10 @@ with GraphDatabase.driver(URI, auth=AUTH) as driver:
         print(f"Query counters: {summary.counters}.")
 
     records, summary, keys = driver.execute_query(
-    """MATCH (n1:Scene)-[:CONNECTED]-(n2:Scene)
+        """MATCH (n1:Scene)-[:CONNECTED]-(n2:Scene)
     WHERE n1.center.x - n2.center.x > 1
     RETURN n1.nodeSymbol AS node1, n2.nodeSymbol as node2""",
-    database_="neo4j",
+        database_="neo4j",
     )
     print("connected nodes:")
     for record in records:
@@ -115,37 +176,36 @@ with GraphDatabase.driver(URI, auth=AUTH) as driver:
 
     # obj in a gravel place?
     records, summary, keys = driver.execute_query(
-    """MATCH (obj:Scene {layer: "object"} )-[:IN]-(place:Scene {class: "gravel"})
+        """MATCH (obj:Scene {layer: "object"} )-[:IN]-(place:Scene {class: "gravel"})
     RETURN obj.nodeSymbol AS obj, place.nodeSymbol as place""",
-    database_="neo4j",
+        database_="neo4j",
     )
     print("grave object nodes:")
     for record in records:
         print(record.data())  # obtain record as dict
 
-    #WHERE (place)-[:CONNECTED*1..2]-(init_place)
+    # WHERE (place)-[:CONNECTED*1..2]-(init_place)
     # paths to objects within 2 hops
     records, summary, keys = driver.execute_query(
-    """MATCH (obj:Scene {layer: "object"} )-[:IN]-(place:Scene)
+        """MATCH (obj:Scene {layer: "object"} )-[:IN]-(place:Scene)
        MATCH (init_place:Scene {nodeSymbol: $nodeSymbol})
        MATCH p = SHORTEST 1 (place)<-[:CONNECTED*..10]-(init_place)
     RETURN obj.nodeSymbol AS obj, p AS path""",
-    nodeSymbol="p(30)",
-    database_="neo4j",
+        nodeSymbol="p(30)",
+        database_="neo4j",
     )
     print("feasible objects:")
     for record in records:
         print(record.data())  # obtain record as dict
-    
 
-    # distance between objects 
+    # distance between objects
     # RETURN obj1.nodeSymbol AS obj1, obj2.nodeSymbol AS obj2, d AS distance
     records, summary, keys = driver.execute_query(
-    """
+        """
     MATCH (obj1:Scene {layer: "object"} ), (obj2:Scene {layer: "object"} )
     WHERE obj1 <> obj2
     RETURN obj1.nodeSymbol AS first_obj, obj2.nodeSymbol AS sec_obj, point.distance(obj1.center, obj2.center) as d""",
-    database_="neo4j",
+        database_="neo4j",
     )
     print("feasible objects:")
     for record in records:
