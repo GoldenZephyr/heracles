@@ -465,6 +465,11 @@ def db_to_spark_dsg(
     # Initialize the spark_dsg scene graph object
     new_scene_graph = spark_dsg.DynamicSceneGraph()
     new_scene_graph.clear()  # Removes all layers
+
+    object_labelspace = spark_dsg.Labelspace(
+        {v: k for k, v in label_to_semantic_id.items()}
+    )
+    new_scene_graph.set_labelspace(object_labelspace, 2, 0)
     # Add each layer (LayerID, PythonPartitionID, Name)
     for spark_layer_id, heracles_layer_name in spark_layer_id_to_layer_name.items():
         new_scene_graph.add_layer(
