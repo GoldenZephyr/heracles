@@ -22,6 +22,10 @@ def compare_mesh_places(mesh_place_a, mesh_place_b):
     pass
 
 
+def compare_places(place_a, place_b):
+    pass
+
+
 def compare_objects(object_a, object_b):
     assert object_a.id == object_b.id
     assert object_a.layer == object_b.layer
@@ -45,6 +49,14 @@ def compare_objects(object_a, object_b):
     assert attr_a.name == attr_b.name
 
 
+def compare_rooms(room_a, room_b):
+    pass
+
+
+def compare_buildings(building_a, building_b):
+    pass
+
+
 def compare_spark_dsgs(graph_a, graph_b):
     # Check that each layer has the same number of nodes & edges
     for layer_a in graph_a.layers:
@@ -60,10 +72,21 @@ def compare_spark_dsgs(graph_a, graph_b):
     for mesh_place_a in mesh_place_nodes:
         compare_mesh_places(mesh_place_a, graph_b.get_node(mesh_place_a.id))
 
+    # Compare the Place nodes
+    for place_a in graph_a.get_layer(spark_dsg.DsgLayers.PLACES).nodes:
+        compare_places(place_a, graph_b.get_node(place_a.id))
+
     # Compare the Object nodes
     for object_a in graph_a.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes:
         compare_objects(object_a, graph_b.get_node(object_a.id))
 
+    # Compare the Room nodes
+    for room_a in graph_a.get_layer(spark_dsg.DsgLayers.ROOMS).nodes:
+        compare_rooms(room_a, graph_b.get_node(room_a.id))
+
+    # Compare the Building nodes
+    for building_a in graph_a.get_layer(spark_dsg.DsgLayers.BUILDINGS).nodes:
+        compare_buildings(building_a, graph_b.get_node(building_a.id))
     return True
 
 
