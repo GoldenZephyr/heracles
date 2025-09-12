@@ -1,0 +1,22 @@
+---
+client:
+    client_type: openai
+    # auth key is supplied by HERACLES_OPENAI_API_KEY
+    timeout: 20
+
+model_info:
+    model: gpt-4.1
+    temperature: 1.0
+    seed: 123
+
+agent_info:
+    prompt_settings:
+        base_prompt: $HERACLES_PATH/examples/agentic_editing_prompt.yaml
+    tools:
+        - name: run_cypher_query
+          bound_args:
+              dsgdb_conf:
+                  dsg_interface_type: heracles
+                  uri: "neo4j://18.18.45.11:7686"
+    tool_interface: openai
+    max_iterations: 6
