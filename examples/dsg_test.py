@@ -89,6 +89,7 @@ layers = {
     2: "Object",
     5: "Building",
     20: "MeshPlace",
+    "3[1]": "MeshPlace",
     3: "Place",
     4: "Room",
 }

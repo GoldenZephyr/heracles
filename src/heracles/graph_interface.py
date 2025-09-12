@@ -260,9 +260,9 @@ def add_edges_from_dsg(G, db):
             to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer.layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
-            assert to_layer_str == constants.OBJECTS, (
-                "Currently Places can only have Objects as children"
-            )
+            assert (
+                to_layer_str == constants.OBJECTS
+            ), "Currently Places can only have Objects as children"
             place_object_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "PLACE_CONNECTED", "Place", "Place", place_place_edges)
@@ -271,6 +271,7 @@ def add_edges_from_dsg(G, db):
     print("Finished Place Edges")
 
     mp_mp_edges = []
+    mesh_place_object_edges = []
     try:
         mesh_place_layer = G.get_layer(spark_dsg.DsgLayers.MESH_PLACES)
     except IndexError:
@@ -280,12 +281,22 @@ def add_edges_from_dsg(G, db):
         for sid in n.siblings():
             to_ns = spark_dsg.NodeSymbol(sid).str(True)
             mp_mp_edges.append({"from": from_ns, "to": to_ns})
+        for cid in n.children():
+            to_ns = spark_dsg.NodeSymbol(cid).str(True)
+            to_layer_id = G.get_node(cid).layer.layer
+            to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
+            assert (
+                to_layer_str == constants.OBJECTS
+            ), "Currently MeshPlaces can only have Objects as children"
+            mesh_place_object_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "MESH_PLACE_CONNECTED", "MeshPlace", "MeshPlace", mp_mp_edges)
+    insert_edges(db, "CONTAINS", "MeshPlace", "Object", mesh_place_object_edges)
     print("Finished Mesh Place Edges")
 
     room_room_edges = []
     room_place_edges = []
+    room_mesh_place_edges = []
     for n in G.get_layer(spark_dsg.DsgLayers.ROOMS).nodes:
         from_ns = n.id.str(True)
         for sid in n.siblings():
@@ -295,13 +306,18 @@ def add_edges_from_dsg(G, db):
             to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
-            assert to_layer_str == "Place", (
-                "Currently Rooms can only have Places as children"
-            )
-            room_place_edges.append({"from": from_ns, "to": to_ns})
+            assert to_layer_str in [
+                "Place",
+                "MeshPlace",
+            ], "Currently Rooms can only have Places or MeshPlaces as children"
+            if to_layer_str == "Place":
+                room_place_edges.append({"from": from_ns, "to": to_ns})
+            elif to_layer_str == "MeshPlace":
+                room_mesh_place_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "ROOM_CONNECTED", "Room", "Room", room_room_edges)
     insert_edges(db, "CONTAINS", "Room", "Place", room_place_edges)
+    insert_edges(db, "CONTAINS", "Room", "MeshPlace", room_mesh_place_edges)
 
     print("Finished Room Edges")
 
@@ -317,9 +333,9 @@ def add_edges_from_dsg(G, db):
             to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
-            assert to_layer_str == "Room", (
-                "Currently Buildings can only have Rooms as children"
-            )
+            assert (
+                to_layer_str == "Room"
+            ), "Currently Buildings can only have Rooms as children"
             building_room_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(
