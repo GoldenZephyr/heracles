@@ -1,0 +1,5 @@
+---
+invalid_labels: []
+label_names:
+  - {label: 0, name: lounge, name_descriptive: lounge}
+  - {label: 1, name: hallway, name_descriptive: hallway}
