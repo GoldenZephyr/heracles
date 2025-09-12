@@ -2,7 +2,6 @@ from neo4j import GraphDatabase
 
 
 class Neo4jWrapper:
-
     def __init__(
         self,
         db_uri,
@@ -11,7 +10,6 @@ class Neo4jWrapper:
         atomic_queries=True,
         print_profiles=False,
     ):
-
         self.driver = None
         self.session = None
         self.db_uri = db_uri
@@ -68,4 +66,3 @@ class Neo4jWrapper:
     def query_with_notifications(self, query):
         records, summary, _ = self.driver.execute_query(query, database_=self.db_name)
         return [r.data() for r in records], summary.notifications
-        

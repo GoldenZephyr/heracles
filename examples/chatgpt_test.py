@@ -1,10 +1,11 @@
-from importlib.resources import as_file, files
-import openai
 import os
-import yaml
-from heracles.prompt_schema import Prompt
-import heracles.resources
+from importlib.resources import as_file, files
 
+import openai
+import yaml
+
+import heracles.resources
+from heracles.prompt_schema import Prompt
 
 key = os.getenv("DSG_OPENAI_API_KEY")
 
