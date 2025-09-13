@@ -260,9 +260,9 @@ def add_edges_from_dsg(G, db):
             to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer.layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
-            assert (
-                to_layer_str == constants.OBJECTS
-            ), "Currently Places can only have Objects as children"
+            assert to_layer_str == constants.OBJECTS, (
+                "Currently Places can only have Objects as children"
+            )
             place_object_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "PLACE_CONNECTED", "Place", "Place", place_place_edges)
@@ -285,9 +285,9 @@ def add_edges_from_dsg(G, db):
             to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer.layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
-            assert (
-                to_layer_str == constants.OBJECTS
-            ), "Currently MeshPlaces can only have Objects as children"
+            assert to_layer_str == constants.OBJECTS, (
+                "Currently MeshPlaces can only have Objects as children"
+            )
             mesh_place_object_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(db, "MESH_PLACE_CONNECTED", "MeshPlace", "MeshPlace", mp_mp_edges)
@@ -333,9 +333,9 @@ def add_edges_from_dsg(G, db):
             to_ns = spark_dsg.NodeSymbol(cid).str(True)
             to_layer_id = G.get_node(cid).layer
             to_layer_str = layer_id_to_layer_str[str(to_layer_id)]
-            assert (
-                to_layer_str == "Room"
-            ), "Currently Buildings can only have Rooms as children"
+            assert to_layer_str == "Room", (
+                "Currently Buildings can only have Rooms as children"
+            )
             building_room_edges.append({"from": from_ns, "to": to_ns})
 
     insert_edges(
@@ -404,36 +404,38 @@ def str_to_ns_value(string):
 
 
 def add_edges_from_db(db, G):
-    # Add the MeshPlace-MeshPlace edges
-    records, _, _ = get_db_edges(db, "MESH_PLACE_CONNECTED", "MeshPlace", "MeshPlace")
-    insert_edges_to_spark(G, records)
-
+    #### INTRALAYER EDGES
     # Add the Object-Object edges
     records, _, _ = get_db_edges(db, "OBJECT_CONNECTED", "Object", "Object")
     insert_edges_to_spark(G, records)
-
-    # Add the Place-Object edges
-    records, _, _ = get_db_edges(db, "CONTAINS", "Place", "Object")
+    # Add the MeshPlace-MeshPlace edges
+    records, _, _ = get_db_edges(db, "MESH_PLACE_CONNECTED", "MeshPlace", "MeshPlace")
     insert_edges_to_spark(G, records)
-
     # Add the Place-Place edges
     records, _, _ = get_db_edges(db, "PLACE_CONNECTED", "Place", "Place")
     insert_edges_to_spark(G, records)
-
-    # Add the Room-Place edges
-    records, _, _ = get_db_edges(db, "CONTAINS", "Room", "Place")
-    insert_edges_to_spark(G, records)
-
     # Add the Room-Room edges
     records, _, _ = get_db_edges(db, "ROOM_CONNECTED", "Room", "Room")
     insert_edges_to_spark(G, records)
-
-    # Add the Building-Room edges
-    records, _, _ = get_db_edges(db, "CONTAINS", "Building", "Room")
-    insert_edges_to_spark(G, records)
-
     # Add the Building-Building edges
     records, _, _ = get_db_edges(db, "BUILDING_CONNECTED", "Building", "Building")
+    insert_edges_to_spark(G, records)
+
+    #### INTERLAYER EDGES
+    # Add the MeshPlace-Object edges
+    records, _, _ = get_db_edges(db, "CONTAINS", "MeshPlace", "Objects")
+    insert_edges_to_spark(G, records)
+    # Add the Place-Object edges
+    records, _, _ = get_db_edges(db, "CONTAINS", "Place", "Object")
+    insert_edges_to_spark(G, records)
+    # Add the Room-Place edges
+    records, _, _ = get_db_edges(db, "CONTAINS", "Room", "Place")
+    insert_edges_to_spark(G, records)
+    # Add the Room-Place edges
+    records, _, _ = get_db_edges(db, "CONTAINS", "Room", "MeshPlace")
+    insert_edges_to_spark(G, records)
+    # Add the Building-Room edges
+    records, _, _ = get_db_edges(db, "CONTAINS", "Building", "Room")
     insert_edges_to_spark(G, records)
     return
 

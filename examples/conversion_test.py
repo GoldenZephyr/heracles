@@ -58,6 +58,10 @@ def compare_buildings(building_a, building_b):
 
 
 def compare_spark_dsgs(graph_a, graph_b):
+    # Check that the entire graph has the same number of edges, layers, and nodes
+    assert graph_a.num_nodes() == graph_b.num_nodes()
+    assert graph_a.num_edges() == graph_b.num_edges()
+    assert graph_a.num_layers() == graph_b.num_layers()
     # Check that each layer has the same number of nodes & edges
     for layer_a in graph_a.layers:
         layer_b = graph_b.get_layer(layer_a.id)
