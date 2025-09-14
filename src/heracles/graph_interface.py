@@ -490,11 +490,18 @@ def db_to_spark_dsg(
     new_scene_graph.set_labelspace(object_labelspace, 2, 0)
     # Add each layer (LayerID, PythonPartitionID, Name)
     for spark_layer_id, heracles_layer_name in spark_layer_id_to_layer_name.items():
-        new_scene_graph.add_layer(
-            spark_layer_id,
-            0,
-            constants.HERACLES_TO_SPARK_LAYER_NAMES[heracles_layer_name],
-        )
+        if spark_layer_id == 20:
+            new_scene_graph.add_layer(
+                3,
+                1,
+                constants.HERACLES_TO_SPARK_LAYER_NAMES[heracles_layer_name],
+            )
+        else:
+            new_scene_graph.add_layer(
+                spark_layer_id,
+                0,
+                constants.HERACLES_TO_SPARK_LAYER_NAMES[heracles_layer_name],
+            )
         records, summary, keys = get_layer_nodes(db, heracles_layer_name)
         # Assign the function to get the attributes
         # TODO - Can we have a generic function for retreiving all of the attributes?
