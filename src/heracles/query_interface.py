@@ -1,4 +1,5 @@
 from neo4j import GraphDatabase
+import neo4j
 
 
 class Neo4jWrapper:
@@ -60,9 +61,11 @@ class Neo4jWrapper:
 
     def query(self, query):
         """A simplified query interface for use with LLMs"""
-        records, _, _ = self.driver.execute_query(query, database_=self.db_name)
+        _query = neo4j.Query(query, timeout=60)
+        records, _, _ = self.driver.execute_query(_query, database_=self.db_name)
         return [r.data() for r in records]
 
     def query_with_notifications(self, query):
-        records, summary, _ = self.driver.execute_query(query, database_=self.db_name)
+        _query = neo4j.Query(query, timeout=60)
+        records, summary, _ = self.driver.execute_query(_query, database_=self.db_name)
         return [r.data() for r in records], summary.notifications

@@ -11,12 +11,17 @@ model_info:
 
 agent_info:
     prompt_settings:
-        base_prompt: $HERACLES_PATH/examples/agentic_editing_prompt.yaml
+        #base_prompt: $HERACLES_PATH/examples/agentic_editing_prompt.yaml
+        base_prompt: agent_prompt.yaml
     tools:
         - name: run_cypher_query
           bound_args:
               dsgdb_conf:
                   dsg_interface_type: heracles
                   uri: "neo4j://18.18.45.11:7686"
+        - name: send_pddl_goal
+          bound_args:
+              robot_name: "hilbert"
+              planner_topic: "/the/planner/topic"
     tool_interface: openai
     max_iterations: 6
