@@ -22,6 +22,6 @@ agent_info:
         - name: send_pddl_goal
           bound_args:
               robot_name: "hilbert"
-              planner_topic: "/the/planner/topic"
+              planner_topic: "/hilbert/omniplanner_node/region_rearrange_objects_pddl/pddl_goal"
     tool_interface: openai
     max_iterations: 6
