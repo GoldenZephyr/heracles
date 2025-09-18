@@ -58,9 +58,18 @@ def compare_buildings(building_a, building_b):
 
 
 def compare_spark_dsgs(graph_a, graph_b):
+    # Check that the entire graph has the same number of edges, layers, and nodes
+    assert graph_a.num_nodes(False) == graph_b.num_nodes(False)
+    assert graph_a.num_edges(False) == graph_b.num_edges(False)
+    assert graph_a.num_layers() == graph_b.num_layers()
     # Check that each layer has the same number of nodes & edges
     for layer_a in graph_a.layers:
         layer_b = graph_b.get_layer(layer_a.id)
+        assert layer_a.num_nodes() == layer_b.num_nodes()
+        assert layer_a.num_edges() == layer_b.num_edges()
+
+    for layer_b in graph_b.layers:
+        layer_a = graph_a.get_layer(layer_b.id)
         assert layer_a.num_nodes() == layer_b.num_nodes()
         assert layer_a.num_edges() == layer_b.num_edges()
 
@@ -119,10 +128,10 @@ id_to_object_label = {
 }
 original_scene_graph.metadata.add({"labelspace": id_to_object_label})
 
-# with as_file(files(heracles.resources).joinpath("scene_camp_buckner_label_space.yaml")) as path:
-with as_file(
-    files(heracles.resources).joinpath("scene_courtyard_label_space.yaml")
-) as path:
+with as_file(files(heracles.resources).joinpath("scene_camp_buckner_label_space.yaml")) as path:
+#with as_file(
+#    files(heracles.resources).joinpath("scene_courtyard_label_space.yaml")
+#) as path:
     with open(str(path), "r") as fo:
         room_labelspace = yaml.safe_load(fo)
 id_to_room_label = {
