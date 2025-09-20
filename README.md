@@ -1,8 +1,7 @@
 <p align="center">
-  <img src="img/heracles.png" alt="Heracles Logo" width="200"/>
+  <img src="img/heracles.png" alt="Heracles Logo" width="120"/><br>
+  <b>Heracles</b>
 </p>
-
-<h1 align="center">Heracles</h1>
 
 ## Setup
 
