@@ -1,4 +1,8 @@
-# Heracles
+<p align="center">
+  <img src="img/heracles.png" alt="Heracles Logo" width="200"/>
+</p>
+
+<h1 align="center">Heracles</h1>
 
 ## Setup
 
