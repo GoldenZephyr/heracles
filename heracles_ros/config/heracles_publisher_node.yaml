@@ -1,0 +1,5 @@
+---
+/**:
+    ros__parameters:
+        heracles_ip: 18.18.45.11
+        heracles_port: "7686"
