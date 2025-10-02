@@ -1,0 +1,17 @@
+---
+launch:
+  - arg: {name: spark_env, default: $(env ADT4_ENV)/spark_env}
+  - arg: {name: robot_name, default: ""}
+  - pyenv_node:
+      pkg: heracles_ros
+      exec: heracles_publisher_node
+      name: heracles_publisher_node
+      namespace: $(var robot_name)
+      pyenv: $(var spark_env)
+      param:
+        - {name: use_sim_time, value: false}
+        - from: $(find-pkg-share heracles_ros)/config/heracles_publisher_node.yaml
+          allow_substs: true
+      remap:
+        - from: ~/dsg_out
+          to: hydra/backend/dsg
