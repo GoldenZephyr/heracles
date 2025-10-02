@@ -34,14 +34,15 @@ class HeraclesPublisher(Node):
 
         # Declare and get parameters
         self.declare_parameter("heracles_ip", "")
-        self.declare_parameter("heracles_port", "")
+        self.declare_parameter("heracles_port", -1)
 
 
         ip = self.get_parameter("heracles_ip").get_parameter_value().string_value
-        port = self.get_parameter("heracles_port").get_parameter_value().string_value
+        port = self.get_parameter("heracles_port").get_parameter_value().integer_value
+        self.get_logger().warning(f"Port: {port}")
 
         assert ip != "", "Please set database IP"
-        assert port != "", "Please set database port"
+        assert port > 0, "Please set database port"
 
         # IP / Port for database
         self.URI = f"neo4j://{ip}:{port}"
