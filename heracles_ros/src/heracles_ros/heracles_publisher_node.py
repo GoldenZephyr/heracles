@@ -35,6 +35,8 @@ class HeraclesPublisher(Node):
         # Declare and get parameters
         self.declare_parameter("heracles_ip", "")
         self.declare_parameter("heracles_port", -1)
+        self.declare_parameter("heracles_neo4j_user", "neo4j")
+        self.declare_parameter("heracles_neo4j_pass", "neo4j_pw")
 
 
         ip = self.get_parameter("heracles_ip").get_parameter_value().string_value
@@ -46,9 +48,11 @@ class HeraclesPublisher(Node):
 
         # IP / Port for database
         self.URI = f"neo4j://{ip}:{port}"
-        logger.info(f"Connecting to {self.URI}")
+        self.get_logger().warning(f"Connecting to {self.URI}")
         # Database name / password for database
-        self.AUTH = ("neo4j", "neo4j_pw")
+        user = self.get_parameter("heracles_neo4j_user").get_parameter_value().string_value
+        pw = self.get_parameter("heracles_neo4j_pass").get_parameter_value().string_value
+        self.AUTH = (user, pw)
 
 
         self.layer_id_to_layer_name = None
