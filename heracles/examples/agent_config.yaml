@@ -18,7 +18,7 @@ agent_info:
           bound_args:
               dsgdb_conf:
                   dsg_interface_type: heracles
-                  uri: "neo4j://18.18.45.11:7686"
+                  uri: "neo4j://127.0.0.1:7687"
         - name: send_pddl_goal
           bound_args:
               robot_name: "hilbert"

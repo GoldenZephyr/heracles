@@ -82,7 +82,7 @@ if __name__ == '__main__':
         G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
         add_metadata(G)
 
-        with Neo4jWrapper("neo4j://18.18.45.11:7686", ("neo4j", "neo4j_pw"), atomic_queries=True, print_profiles=False) as db:
+        with Neo4jWrapper("neo4j://127.0.0.1:7686", ("neo4j", "neo4j_pw"), atomic_queries=True, print_profiles=False) as db:
             initialize_db(db)
             spark_dsg_to_db(G, db)
 
