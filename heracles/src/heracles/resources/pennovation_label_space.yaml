@@ -2,4 +2,8 @@
 invalid_labels: []
 label_names:
   - {label: 0, name: parking, name_descriptive: parking lot}
-  - {label: 1, name: yard, name_descriptive: yard}
+  - {label: 1, name: coutyard, name_descriptive: courtyard}
+  - {label: 2, name: alley, name_descriptive: alley}
+  - {label: 3, name: road, name_descriptive: road}
+  - {label: 4, name: meadow, name_descriptive: meadow}
+  - {label: 5, name: lawn, name_descriptive: lawn}
