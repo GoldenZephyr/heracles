@@ -76,7 +76,7 @@ class HeraclesPublisher(Node):
         }
 
         with as_file(
-            files(heracles.resources).joinpath("b45_label_space.yaml")
+            files(heracles.resources).joinpath("pennovation_label_space.yaml")
         ) as path:
             with open(str(path), "r") as fo:
                 room_labelspace = yaml.safe_load(fo)
