@@ -1,5 +1,5 @@
 ---
 invalid_labels: []
 label_names:
-  - {label: 0, name: parking_lot, name_descriptive: parking lot}
+  - {label: 0, name: parking, name_descriptive: parking lot}
   - {label: 1, name: yard, name_descriptive: yard}
