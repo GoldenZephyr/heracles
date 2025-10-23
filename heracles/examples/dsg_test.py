@@ -66,22 +66,13 @@ G.metadata.add({"labelspace": id_to_label})
 # 6:"building",
 # }
 
-region_ls = {
-    0: "unknown",
-    1: "road",
-    2: "field",
-    3: "shelter",
-    4: "indoor",
-    5: "stairs",
-    6: "sidewalk",
-    7: "path",
-    8: "boundary",
-    9: "shore",
-    10: "ground",
-    11: "dock",
-    12: "parking",
-    13: "footing",
-}
+region_ls = { 0: "parking",
+1: "coutyard",
+2: "alley",
+3: "road",
+4: "meadow",
+5: "lawn"}
+
 G.metadata.add({"room_labelspace": region_ls})
 
 
