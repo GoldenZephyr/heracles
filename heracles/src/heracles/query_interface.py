@@ -1,5 +1,5 @@
-from neo4j import GraphDatabase
 import neo4j
+from neo4j import GraphDatabase
 
 
 class Neo4jWrapper:

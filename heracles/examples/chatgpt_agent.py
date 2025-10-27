@@ -1,18 +1,17 @@
-
-import yaml
-
 import logging
-
-from prompt_toolkit import prompt
 import sys
+from importlib.resources import as_file, files
+
 import spark_dsg
+import yaml
 from heracles_evaluation.llm_agent import LlmAgent
 from heracles_evaluation.llm_interface import AgentContext
-from heracles.graph_interface import initialize_db, spark_dsg_to_db
-from heracles.query_interface import Neo4jWrapper
+from prompt_toolkit import prompt
+
 import heracles.constants
 import heracles.resources
-from importlib.resources import as_file, files
+from heracles.graph_interface import initialize_db, spark_dsg_to_db
+from heracles.query_interface import Neo4jWrapper
 
 
 class InfoToPrintHandler(logging.Handler):
@@ -20,12 +19,16 @@ class InfoToPrintHandler(logging.Handler):
         if record.levelno == logging.INFO:
             print(record.getMessage())
 
+
 def new_user_message(text):
     return [{"role": "user", "content": text}]
 
+
 def add_metadata(H):
-# Load the object and room/region labelspaces
-    with as_file(files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")) as path:
+    # Load the object and room/region labelspaces
+    with as_file(
+        files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")
+    ) as path:
         with open(str(path), "r") as fo:
             object_labelspace = yaml.safe_load(fo)
     id_to_object_label = {
@@ -33,10 +36,8 @@ def add_metadata(H):
     }
     H.metadata.add({"labelspace": id_to_object_label})
 
-# with as_file(files(heracles.resources).joinpath("scene_camp_buckner_label_space.yaml")) as path:
-    with as_file(
-        files(heracles.resources).joinpath("b45_label_space.yaml")
-    ) as path:
+    # with as_file(files(heracles.resources).joinpath("scene_camp_buckner_label_space.yaml")) as path:
+    with as_file(files(heracles.resources).joinpath("b45_label_space.yaml")) as path:
         with open(str(path), "r") as fo:
             room_labelspace = yaml.safe_load(fo)
     id_to_room_label = {
@@ -44,7 +45,7 @@ def add_metadata(H):
     }
     H.metadata.add({"room_labelspace": id_to_room_label})
 
-# Define a layer id map
+    # Define a layer id map
     layer_id_to_layer_name = {
         20: heracles.constants.MESH_PLACES,
         "3[1]": heracles.constants.MESH_PLACES,
@@ -69,8 +70,8 @@ def generate_initial_prompt(agent: LlmAgent):
     prompt = agent.agent_info.prompt_settings.base_prompt
     return prompt
 
-if __name__ == '__main__':
 
+if __name__ == "__main__":
     if len(sys.argv) > 2:
         print("Usage: ./chatgpt_agent.py <dsg filepath>")
         exit(1)
@@ -82,19 +83,22 @@ if __name__ == '__main__':
         G = spark_dsg.DynamicSceneGraph.load(sys.argv[1])
         add_metadata(G)
 
-        with Neo4jWrapper("neo4j://127.0.0.1:7686", ("neo4j", "neo4j_pw"), atomic_queries=True, print_profiles=False) as db:
+        with Neo4jWrapper(
+            "neo4j://127.0.0.1:7686",
+            ("neo4j", "neo4j_pw"),
+            atomic_queries=True,
+            print_profiles=False,
+        ) as db:
             initialize_db(db)
             spark_dsg_to_db(G, db)
-
 
     messages = generate_initial_prompt(agent_config).to_openai_json()
     logger.info(f"\nLLM Prompt: {messages}\n")
 
-
     print("You will be asked for input. Press <Esc> <enter> to submit input")
     print("You can exit by typing exit")
     while True:
-        user_input = prompt('Give me some input: ', multiline=True)
+        user_input = prompt("Give me some input: ", multiline=True)
         if user_input == "exit":
             break
 
@@ -102,7 +106,7 @@ if __name__ == '__main__':
 
         cxt = AgentContext(agent_config)
         cxt.history = messages
-        #cxt.initialize_agent(messages)
+        # cxt.initialize_agent(messages)
         success, answer = cxt.run()
         print(f"\nLLM says: {answer}\n")
         messages = cxt.history

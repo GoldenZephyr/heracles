@@ -43,6 +43,8 @@ setup(
     license="TODO: License declaration",
     tests_require=["pytest"],
     entry_points={
-        "console_scripts": ["heracles_publisher_node = heracles_ros.heracles_publisher_node:main"],
+        "console_scripts": [
+            "heracles_publisher_node = heracles_ros.heracles_publisher_node:main"
+        ],
     },
 )

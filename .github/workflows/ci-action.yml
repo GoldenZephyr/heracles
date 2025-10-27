@@ -14,6 +14,13 @@ jobs:
         uses: actions/checkout@v4
         with:
           path: heracles_repo
+      - name: Lint
+        run: |
+          sudo apt-get update
+          sudo apt install pipx
+          pipx install pre-commit
+          cd ${{github.workspace}}
+          pre-commit run --all-files
       - name: Install Heracles
         run: cd ${{ github.workspace }}/heracles_repo/heracles && pwd && pip install .
       - name: Checkout Spark-DSG

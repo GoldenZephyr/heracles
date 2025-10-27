@@ -1,7 +1,7 @@
 ---
 launch:
   - arg: {name: spark_env, default: $(env ADT4_ENV)/spark_env}
-  - arg: {name: robot_name, default: ""}
+  - arg: {name: robot_name, default: ''}
   - pyenv_node:
       pkg: heracles_ros
       exec: heracles_publisher_node
