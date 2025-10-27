@@ -15,7 +15,7 @@ jobs:
         with:
           path: heracles_repo
       - name: Install Heracles
-        run: cd ${{ github.workspace }}/heracles_repo && pwd && pip install .
+        run: cd ${{ github.workspace }}/heracles_repo/heracles && pwd && pip install .
       - name: Checkout Spark-DSG
         uses: actions/checkout@v2
         with:
