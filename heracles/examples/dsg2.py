@@ -1,24 +1,24 @@
 #!/usr/bin/env python3
-from importlib.resources import as_file, files
 import sys
 import time
+from importlib.resources import as_file, files
 
+import neo4j
 import spark_dsg
 import yaml
-import neo4j
 
 import heracles
-from heracles.dsg_utils import summarize_dsg
 import heracles.resources
-from heracles.query_interface import Neo4jWrapper
+from heracles.dsg_utils import summarize_dsg
 from heracles.graph_interface import (
-    add_objects_from_dsg,
-    add_places_from_dsg,
-    add_mesh_places_from_dsg,
-    add_rooms_from_dsg,
     add_buildings_from_dsg,
     add_edges_from_dsg,
+    add_mesh_places_from_dsg,
+    add_objects_from_dsg,
+    add_places_from_dsg,
+    add_rooms_from_dsg,
 )
+from heracles.query_interface import Neo4jWrapper
 
 
 def try_drop_index(db, index_name):
@@ -116,7 +116,7 @@ with Neo4jWrapper(URI, AUTH, atomic_queries=True, print_profiles=False) as db:
 
     # find the boxes
     records, summary, keys = db.execute(
-        """MATCH (p:Object {class: "box"}) 
+        """MATCH (p:Object {class: "box"})
         RETURN p.nodeSymbol AS nodeSymbol, p.class AS class, p.center AS center""",
     )
 

@@ -128,10 +128,12 @@ id_to_object_label = {
 }
 original_scene_graph.metadata.add({"labelspace": id_to_object_label})
 
-with as_file(files(heracles.resources).joinpath("scene_camp_buckner_label_space.yaml")) as path:
-#with as_file(
-#    files(heracles.resources).joinpath("scene_courtyard_label_space.yaml")
-#) as path:
+with as_file(
+    files(heracles.resources).joinpath("scene_camp_buckner_label_space.yaml")
+) as path:
+    # with as_file(
+    #    files(heracles.resources).joinpath("scene_courtyard_label_space.yaml")
+    # ) as path:
     with open(str(path), "r") as fo:
         room_labelspace = yaml.safe_load(fo)
 id_to_room_label = {

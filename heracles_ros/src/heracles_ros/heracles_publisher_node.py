@@ -1,22 +1,22 @@
 #!/usr/bin/env python3
 
 import logging
-import rclpy
-
-from hydra_ros import DsgPublisher
-from rclpy.node import Node
-from heracles.dsg_utils import summarize_dsg
-from heracles.graph_interface import db_to_spark_dsg
+from importlib.resources import as_file, files
 
 import heracles.constants
 import heracles.resources
-from importlib.resources import as_file, files
-import yaml
-from heracles.query_interface import Neo4jWrapper
-import spark_dsg
 import numpy as np
+import rclpy
+import spark_dsg
+import yaml
+from heracles.dsg_utils import summarize_dsg
+from heracles.graph_interface import db_to_spark_dsg
+from heracles.query_interface import Neo4jWrapper
+from hydra_ros import DsgPublisher
+from rclpy.node import Node
 
 logger = logging.getLogger(__name__)
+
 
 def center_w_h_to_bb(center, w, h):
     return np.array(
@@ -28,6 +28,7 @@ def center_w_h_to_bb(center, w, h):
         ]
     )
 
+
 class HeraclesPublisher(Node):
     def __init__(self):
         super().__init__("heracles_publisher")
@@ -37,7 +38,6 @@ class HeraclesPublisher(Node):
         self.declare_parameter("heracles_port", -1)
         self.declare_parameter("heracles_neo4j_user", "neo4j")
         self.declare_parameter("heracles_neo4j_pass", "neo4j_pw")
-
 
         ip = self.get_parameter("heracles_ip").get_parameter_value().string_value
         port = self.get_parameter("heracles_port").get_parameter_value().integer_value
@@ -50,10 +50,13 @@ class HeraclesPublisher(Node):
         self.URI = f"neo4j://{ip}:{port}"
         self.get_logger().warning(f"Connecting to {self.URI}")
         # Database name / password for database
-        user = self.get_parameter("heracles_neo4j_user").get_parameter_value().string_value
-        pw = self.get_parameter("heracles_neo4j_pass").get_parameter_value().string_value
+        user = (
+            self.get_parameter("heracles_neo4j_user").get_parameter_value().string_value
+        )
+        pw = (
+            self.get_parameter("heracles_neo4j_pass").get_parameter_value().string_value
+        )
         self.AUTH = (user, pw)
-
 
         self.layer_id_to_layer_name = None
         self.object_label_to_id = None
@@ -67,8 +70,9 @@ class HeraclesPublisher(Node):
         self.timer = self.create_timer(timer_period_s, self.publish_dsg)
 
     def setup_labelspaces(self):
-
-        with as_file(files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")) as path:
+        with as_file(
+            files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")
+        ) as path:
             with open(str(path), "r") as fo:
                 object_labelspace = yaml.safe_load(fo)
         id_to_object_label = {
@@ -93,26 +97,30 @@ class HeraclesPublisher(Node):
             5: heracles.constants.BUILDINGS,
         }
 
-
         self.object_label_to_id = {v: k for k, v in id_to_object_label.items()}
         self.room_label_to_id = {v: k for k, v in id_to_room_label.items()}
 
-
     def publish_dsg(self):
-        with Neo4jWrapper(self.URI, self.AUTH, atomic_queries=True, print_profiles=False) as db:
+        with Neo4jWrapper(
+            self.URI, self.AUTH, atomic_queries=True, print_profiles=False
+        ) as db:
             new_scene_graph = db_to_spark_dsg(
-                db, self.layer_id_to_layer_name, self.object_label_to_id, self.room_label_to_id
+                db,
+                self.layer_id_to_layer_name,
+                self.object_label_to_id,
+                self.room_label_to_id,
             )
         summarize_dsg(new_scene_graph)
 
         for n in new_scene_graph.get_layer(spark_dsg.DsgLayers.MESH_PLACES).nodes:
-            n.attributes.bounding_box = spark_dsg.BoundingBox((1,1,.001), n.attributes.position)   
+            n.attributes.bounding_box = spark_dsg.BoundingBox(
+                (1, 1, 0.001), n.attributes.position
+            )
             corners = center_w_h_to_bb(n.attributes.position, 1, 1)
             boundary = np.zeros((4, 3))
             boundary[:, :2] = corners
             boundary[:, 2] = n.attributes.position[2]
             n.attributes.boundary = boundary
-
 
         self.dsg_sender.publish(new_scene_graph, frame_id="map")
         self.get_logger().info("Published map")

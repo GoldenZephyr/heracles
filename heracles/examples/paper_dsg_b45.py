@@ -1,9 +1,12 @@
-import spark_dsg
-#import pydsg
-import yaml
 import numpy as np
+import spark_dsg
 
-G = spark_dsg.DynamicSceneGraph.load("/home/ubuntu/lxc_datashare/heracles_evaluation_dsg_data/postprocess1/b45_clip_2_mesh.json")
+# import pydsg
+import yaml
+
+G = spark_dsg.DynamicSceneGraph.load(
+    "/home/ubuntu/lxc_datashare/heracles_evaluation_dsg_data/postprocess1/b45_clip_2_mesh.json"
+)
 
 ll_clip = (-27, -27)
 ur_clip = (8.5, -1.1)
@@ -51,7 +54,9 @@ with open(bb_fn, "r") as fo:
 for room_id in box_yaml:
     attrs = spark_dsg.RoomNodeAttributes()
     attrs.name = f"R{room_id}"
-    G.add_node(spark_dsg.DsgLayers.ROOMS, spark_dsg.NodeSymbol("R", int(room_id)), attrs)
+    G.add_node(
+        spark_dsg.DsgLayers.ROOMS, spark_dsg.NodeSymbol("R", int(room_id)), attrs
+    )
 
 for room_id, boxes in box_yaml.items():
     for b in boxes:
@@ -61,7 +66,9 @@ for room_id, boxes in box_yaml.items():
         print("bb: ", bb)
         for n in G.get_layer(spark_dsg.DsgLayers.MESH_PLACES).nodes:
             if bb.contains(n.attributes.position):
-                print("adding edge: ", n.id.value, spark_dsg.NodeSymbol("R", int(room_id)))
+                print(
+                    "adding edge: ", n.id.value, spark_dsg.NodeSymbol("R", int(room_id))
+                )
                 G.insert_edge(n.id.value, spark_dsg.NodeSymbol("R", int(room_id)).value)
 
 node_to_position = {}
@@ -82,7 +89,6 @@ for rid, label in room_id_to_label_idx.items():
     v = spark_dsg.NodeSymbol("R", int(rid)).value
     n = G.get_node(v)
     n.attributes.semantic_label = label
-    
 
 
 G.save("b45_out_dsg.json")
