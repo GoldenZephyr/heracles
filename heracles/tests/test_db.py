@@ -42,7 +42,7 @@ def add_dsg_metadata(G):
         3: "Place",
         4: "Room",
     }
-    G.metadata.add({"LayerIdToLayerStr": layers})
+    G.metadata.add({"LayerIdToHeraclesLayerStr": layers})
 
 
 def build_test_dsg():
@@ -169,15 +169,15 @@ def populated_db():
 
 def test_rooms(populated_db):
     q = populated_db.query(
-        """MATCH (r: Room {nodeSymbol: "R(0)"}) RETURN r.nodeSymbol as ns, r.center as center"""
+        """MATCH (r: Room {nodeSymbol: "R0"}) RETURN r.nodeSymbol as ns, r.center as center"""
     )
     assert len(q) == 1
-    assert q[0]["ns"] == "R(0)"
+    assert q[0]["ns"] == "R0"
     assert np.all(np.isclose(q[0]["center"], np.array([0, 0, 0])))
 
 
 def test_places(populated_db):
-    q = populated_db.query("""MATCH (p: Place {nodeSymbol: "p(0)"}) RETURN p""")
+    q = populated_db.query("""MATCH (p: Place {nodeSymbol: "p0"}) RETURN p""")
     assert np.all(np.isclose(np.array([-1, 0, 0]), q[0]["p"]["center"]))
 
     q = populated_db.query("""MATCH (p: Place) RETURN p""")
@@ -188,7 +188,7 @@ def test_mesh_places(populated_db):
     q = populated_db.query("""MATCH (p: MeshPlace) RETURN p""")
     assert len(q) == 2
 
-    q = populated_db.query("""MATCH (p: MeshPlace {nodeSymbol: "P(0)"}) RETURN p""")
+    q = populated_db.query("""MATCH (p: MeshPlace {nodeSymbol: "P0"}) RETURN p""")
     assert np.all(np.isclose(np.array([-1.1, 0, 0]), q[0]["p"]["center"]))
     assert q[0]["p"]["class"] == "ground"
 
@@ -199,12 +199,12 @@ def test_objects(populated_db):
 
     q = populated_db.query("""MATCH (o: Object {class: "box"}) RETURN o""")
     assert len(q) == 1
-    assert q[0]["o"]["nodeSymbol"] == "o(0)"
+    assert q[0]["o"]["nodeSymbol"] == "o0"
 
 
 def test_edges(populated_db):
     q = populated_db.query(
-        """MATCH (r: Room {nodeSymbol: "R(0)"})-[:CONTAINS*]->(o: Object) RETURN o"""
+        """MATCH (r: Room {nodeSymbol: "R0"})-[:CONTAINS*]->(o: Object) RETURN o"""
     )
 
     assert len(q) == 2
