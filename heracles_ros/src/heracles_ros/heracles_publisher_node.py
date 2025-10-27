@@ -56,14 +56,14 @@ class HeraclesPublisher(Node):
 
         ip = self.get_parameter("heracles_ip").get_parameter_value().string_value
         port = self.get_parameter("heracles_port").get_parameter_value().integer_value
-        self.get_logger().warning(f"Port: {port}")
+        self.get_logger().info(f"Port: {port}")
 
         assert ip != "", "Please set database IP"
         assert port > 0, "Please set database port"
 
         # IP / Port for database
         self.URI = f"neo4j://{ip}:{port}"
-        self.get_logger().warning(f"Connecting to {self.URI}")
+        self.get_logger().info(f"Connecting to {self.URI}")
         # Database name / password for database
         user = (
             self.get_parameter("heracles_neo4j_user").get_parameter_value().string_value
@@ -81,9 +81,11 @@ class HeraclesPublisher(Node):
         object_labelspace_name = (
             self.get_parameter("object_labelspace").get_parameter_value().string_value
         )
+        assert object_labelspace_name != "", "Please set `object_labelspace`"
         region_labelspace_name = (
             self.get_parameter("region_labelspace").get_parameter_value().string_value
         )
+        assert region_labelspace_name != "", "Please set `reigon_labelspace`"
         self.setup_labelspaces(object_labelspace_name, region_labelspace_name)
 
         self.dsg_sender = DsgPublisher(self, "~/dsg_out", True)
@@ -100,6 +102,7 @@ class HeraclesPublisher(Node):
             item["label"]: item["name"] for item in object_labelspace["label_names"]
         }
 
+        self.get_logger().info(f"region_labelspace_name: {region_labelspace_name}")
         room_labelspace = load_abs_or_pkg_path_as_yaml(
             heracles.resources, region_labelspace_name
         )
@@ -107,6 +110,7 @@ class HeraclesPublisher(Node):
         id_to_room_label = {
             item["label"]: item["name"] for item in room_labelspace["label_names"]
         }
+        self.get_logger().info(f"id_to_room_label: {id_to_room_label}")
 
         # Define a layer id map
         self.layer_id_to_layer_name = {
