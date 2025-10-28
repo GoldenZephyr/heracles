@@ -1,0 +1,46 @@
+---
+launch:
+  - arg: {name: venv_dir, default: $(env HERACLES_VENV)}
+
+  # Hydra Visualizer
+  - arg: {name: launch_hydra_visualizer, default: 'false'}
+  - node:
+      if: $(var launch_hydra_visualizer)
+      pkg: hydra_visualizer
+      exec: hydra_visualizer_node
+      name: hydra_visualizer
+      param:
+        - {name: use_sim_time, value: false}
+      remap:
+        - {from: ~/dsg, to: hydra/backend/dsg}
+      args: >
+        --config-utilities-file $(find-pkg-share heracles_ros)/config/hydra_visualizer_config.yaml
+        --config-utilities-file $(find-pkg-share hydra_visualizer)/config/visualizer_plugins.yaml
+        --config-utilities-file $(find-pkg-share hydra_visualizer)/config/external_plugins.yaml
+        --config-utilities-yaml {glog_level: 1, glog_verbosity: 0}
+
+  # Rviz
+  - arg: {name: launch_rviz, default: 'false'}
+  - node:
+      if: $(var launch_rviz)
+      pkg: rviz2
+      exec: rviz2
+      name: rviz2_node
+      args: -d $(find-pkg-share heracles_ros)/rviz/example.rviz
+      param:
+        - {name: use_sim_time, value: false}
+
+  # Heracles Publisher
+  - arg: {name: launch_heracles_publisher, default: 'false'}
+  - pyenv_node:
+      if: $(var launch_heracles_publisher)
+      pkg: heracles_ros
+      exec: heracles_publisher_node
+      name: heracles_publisher_node
+      pyenv: $(var venv_dir)
+      param:
+        - {name: use_sim_time, value: false}
+        - {from: $(find-pkg-share heracles_ros)/config/heracles_publisher_node.yaml, allow_substs: true}
+      remap:
+        - from: ~/dsg_out
+          to: hydra/backend/dsg
