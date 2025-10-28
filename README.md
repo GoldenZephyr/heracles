@@ -19,14 +19,6 @@ docker run -d \
    neo4j:5.25.1
 ```
 
-Clone and install [`spark_dsg`](https://github.com/mit-SPARK/spark-dsg):
-```bash
-sudo apt install libzmqpp-dev nlohmann-json3-dev ninja-build
-git clone git@github.com:MIT-SPARK/Spark-DSG.git
-cd Spark-DSG
-pip install .
-```
-
 Clone and install this repo:
 ```bash
 git@github.com:npolshakova/heracles.git
