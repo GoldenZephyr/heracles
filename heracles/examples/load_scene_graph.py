@@ -17,7 +17,7 @@ from heracles.query_interface import Neo4jWrapper
 
 
 def main(scene_graph, neo4j_uri, neo4j_creds):
-    global db # Global for easy access in interactive mode
+    global db  # Global for easy access in interactive mode
     db = Neo4jWrapper(neo4j_uri, neo4j_creds, atomic_queries=True, print_profiles=False)
     db.connect()
     # Clear any existing content from the DB & initialize with the schema
