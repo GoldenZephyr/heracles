@@ -29,7 +29,7 @@ pip install .
 
 Clone and install this repo:
 ```bash
-git@github.com:npolshakova/heracles.git
+git@github.com:GoldenZephyr/heracles.git
 cd heracles
 pip install .
 ```
