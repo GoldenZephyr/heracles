@@ -71,6 +71,7 @@ python -i load_scene_graph.py
 The demo should run as normal but end in an active interactive mode. You can immediately try another query. For example:
 ```bash
 db.query("MATCH (n: Object) RETURN DISTINCT n.class as class, COUNT(*) as count")
+```
 
 ## Heracles ROS
 
