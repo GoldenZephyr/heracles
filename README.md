@@ -3,6 +3,9 @@
   <b>Heracles</b>
 </p>
 
+# What is Heracles?
+This repository provides a library for encoding a [Hydra](https://github.com/MIT-SPARK/Hydra) 3D scene graph into a Neo4j database. It expects a scene graph to initially be loaded from file via [spark\_dsg](https://github.com/MIT-SPARK/Spark-DSG) and provides utilities for translating back and forth between spark\_dsg and the Neo4j database.
+
 ## Setup
 
 Pull the Neo4j database image:
@@ -39,7 +42,39 @@ scene graph file into a graph database and running some simple queries. You can
 run it in interaction mode (`ipython3 -i heracles/examples/dsg_test.py`) and
 then try executing some of the other example queries below.
 
+## Demo - Loading a Scene Graph
+We provide a demo program that loads a scene graph from file, encodes it into a database, and performs a simple query for validation. The demo program is implemented with interactive mode in mind to make it easy to try other kinds of queries.
+
+### Environment Variables
+We expect certain environment variables to be set, listed below. `HERACLES\_NEO4J\_URI` can alternatively be provided via the command line. An example of `HERACLES\_NEO4J\_URI` is `neo4j://127.0.0.1:7688`.
+
+| Environment Variable Name         | Description                                                                |
+|-----------------------------------|----------------------------------------------------------------------------|
+| HERACLES\_NEO4J\_USERNAME         | Username of local Neo4j graph database                                     |
+| HERACLES\_NEO4J\_PASSWORD         | Password of local Neo4j graph database                                     |
+| HERACLES\_NEO4J\_URI              | Address for database (neo4j://IP:PORT)                                     |
+
+
+### Run the program
+To run the vanilla demo (load a scene graph and print a summary):
+```bash
+cd heracles/examples/
+./load_scene_graph.py
+```
+
+The demo is useful to run in interactive mode. We leave the DB connection open, so it is possible to easily try other queries.
+To run the program in interactive mode:
+```bash
+cd heracles/examples/
+python -i load_scene_graph.py
+```
+The demo should run as normal but end in an active interactive mode. You can immediately try another query. For example:
+```bash
+db.query("MATCH (n: Object) RETURN DISTINCT n.class as class, COUNT(*) as count")
+```
+
 ## Useful Queries
+
 
 ### Print distinct object classes in scene graph
 
