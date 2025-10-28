@@ -17,22 +17,22 @@ from heracles.query_interface import Neo4jWrapper
 
 
 def main(scene_graph, neo4j_uri, neo4j_creds):
-    with Neo4jWrapper(
-        neo4j_uri, neo4j_creds, atomic_queries=True, print_profiles=False
-    ) as db:
-        # Clear any existing content from the DB & initialize with the schema
-        print("Initializing the database.")
-        initialize_db(db)
-        # Load the scene graph into the DB
-        print("Loading the scene graph into the database.")
-        spark_dsg_to_db(scene_graph, db)
-        # Print the distinct object classes and their count
-        print("Querying for all of the distinct object classes and their count.")
-        records, summary, keys = db.execute(
-            """MATCH (n: Object) RETURN DISTINCT n.class as class, COUNT(*) as count"""
-        )
-        for record in records:
-            print(record.data())
+    global db # Global for easy access in interactive mode
+    db = Neo4jWrapper(neo4j_uri, neo4j_creds, atomic_queries=True, print_profiles=False)
+    db.connect()
+    # Clear any existing content from the DB & initialize with the schema
+    print("Initializing the database.")
+    initialize_db(db)
+    # Load the scene graph into the DB
+    print("Loading the scene graph into the database.")
+    spark_dsg_to_db(scene_graph, db)
+    # Print the distinct object classes and their count
+    print("Querying for all of the distinct object classes and their count.")
+    records, summary, keys = db.execute(
+        """MATCH (n: Object) RETURN DISTINCT n.class as class, COUNT(*) as count"""
+    )
+    for record in records:
+        print(record.data())
     return
 
 
