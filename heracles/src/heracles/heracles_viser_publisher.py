@@ -84,8 +84,6 @@ if __name__ == "__main__":
                 room_label_to_id,
             )
         renderer.draw(new_scene_graph)
-        time.sleep(0.1)
-        renderer.update()
 
-        # update ever 5s
+        # update every 5s
         time.sleep(5)
