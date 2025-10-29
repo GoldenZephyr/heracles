@@ -1,4 +1,6 @@
 services:
+
+  # Graph database storing scene graph
   neo4j:
     image: neo4j:5.25.1
     environment:
@@ -14,17 +16,7 @@ services:
       retries: 10
       start_period: 2s
 
-
-  #backend:
-  #  build: ./backend
-  #  depends_on:
-  #    db:
-  #      condition: service_healthy
-  #  environment:
-  #    DATABASE_URL: postgres://demo:demo@db:5432/demo
-  #  ports:
-  #    - "8080:8080"
-
+  # Standalone python interpreter example for running queries against database
   cli:
     build:
       context: ..
@@ -41,6 +33,7 @@ services:
     tty: true
     entrypoint: ["ipython", "-i", "/heracles/examples/load_scene_graph.py", "--", "--scene_graph", "/heracles/examples/scene_graphs/example_dsg.json"]
 
+  # Interactive LLM-based agent interaction with database
   chatdsg:
     build:
       context: .
@@ -63,7 +56,7 @@ services:
     #entrypoint: ["python3", "/heracles_agents/examples/chatdsg/chatdsg.py"]
     #entrypoint: ["/bin/bash"]
 
-
+  # Visualize scene graph in RVIZ using Hydra ROS visualizer
   hydra_visualization:
     build:
       dockerfile: hydra.Dockerfile
@@ -73,6 +66,27 @@ services:
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
-      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
+      #HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
+      HERACLES_IP: 127.0.0.1
+      HERACLES_PORT: 7683
+      HERACLES_VENV: ""
+      DISPLAY: $DISPLAY
+      QT_X11_NO_MITSHM: 1
     network_mode: "host"
+    volumes:
+        - /tmp/.X11-unix:/tmp/.X11-unix:rw
     entrypoint: ["/bin/bash", "/run_hydra_visualization.sh"]
+
+  # Visualize scene graph in Viser using spark_dsg Viser visualization
+  viser_visualization:
+    build:
+      context: ..
+      dockerfile: docker/spark_dsg_viser.Dockerfile
+    environment:
+      HERACLES_NEO4J_USERNAME: neo4j
+      HERACLES_NEO4J_PASSWORD: neo4j_pw
+      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
+      SPARK_DSG_VISER_IP: 127.0.0.1
+      SPARK_DSG_VISER_PORT: 8081
+    network_mode: "host"
+    entrypoint: ["python", "/heracles-viser/heracles_viser_publisher.py"]
