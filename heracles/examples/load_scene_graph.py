@@ -23,8 +23,10 @@ if __name__ == "__main__":
     parser.add_argument(
         "--neo4j_uri", type=str, default=os.getenv("HERACLES_NEO4J_URI")
     )
-    parser.add_argument("--object_labelspace", type=str, default="")
-    parser.add_argument("--room_labelspace", type=str, default="")
+    parser.add_argument(
+        "--object_labelspace", type=str, default="ade20k_mit_label_space.yaml"
+    )
+    parser.add_argument("--room_labelspace", type=str, default="b45_label_space.yaml")
     args = parser.parse_args()
     assert args.neo4j_uri, (
         'No NEO4J_URI provided -- either provide as an arg or set "$HERACLES_NEO4J_URI"'

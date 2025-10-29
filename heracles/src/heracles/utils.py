@@ -1,3 +1,4 @@
+import os
 from importlib.resources import as_file, files
 
 import yaml
@@ -12,7 +13,7 @@ from heracles.query_interface import Neo4jWrapper
 
 
 def get_labelspace(labelspace_name):
-    if labelspace_name:
+    if os.path.exists(labelspace_name):
         with open(labelspace_name, "r") as file:
             labelspace = yaml.safe_load(file)
     else:
