@@ -26,9 +26,9 @@ if __name__ == "__main__":
     parser.add_argument("--object_labelspace", type=str, default="")
     parser.add_argument("--room_labelspace", type=str, default="")
     args = parser.parse_args()
-    assert (
-        args.neo4j_uri
-    ), 'No NEO4J_URI provided -- either provide as an arg or set "$HERACLES_NEO4J_URI"'
+    assert args.neo4j_uri, (
+        'No NEO4J_URI provided -- either provide as an arg or set "$HERACLES_NEO4J_URI"'
+    )
     # Load the scene graph from file
     print(f'Loading the scene graph from file ("{args.scene_graph}").')
     scene_graph = spark_dsg.DynamicSceneGraph.load(args.scene_graph)

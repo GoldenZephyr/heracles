@@ -1,6 +1,6 @@
-import yaml
 from importlib.resources import as_file, files
 
+import yaml
 
 import heracles
 import heracles.resources
@@ -16,9 +16,7 @@ def get_labelspace(labelspace_name):
         with open(labelspace_name, "r") as file:
             labelspace = yaml.safe_load(file)
     else:
-        with as_file(
-            files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")
-        ) as path:
+        with as_file(files(heracles.resources).joinpath(labelspace_name)) as path:
             with open(str(path), "r") as file:
                 labelspace = yaml.safe_load(file)
     id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
