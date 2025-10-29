@@ -86,7 +86,5 @@ services:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
       HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
-      SPARK_DSG_VISER_IP: 127.0.0.1
-      SPARK_DSG_VISER_PORT: 8081
     network_mode: host
-    entrypoint: [python, /heracles-viser/heracles_viser_publisher.py]
+    entrypoint: [python, /heracles/src/heracles/heracles_viser_publisher.py, --ip, 127.0.0.1, --port, "8081"]

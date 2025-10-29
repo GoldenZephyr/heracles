@@ -14,10 +14,13 @@ RUN git clone https://github.com/GoldenZephyr/heracles_agents.git
 RUN git clone https://github.com/GoldenZephyr/heracles.git
 
 RUN python3 -m venv /venv --system-site-packages
-RUN vcs import . < hydra_ros/install/ros2_docker.yaml
+RUN git clone https://github.com/MIT-SPARK/config_utilities.git
+RUN git clone https://github.com/MIT-SPARK/Kimera-PGMO.git
+RUN git clone https://github.com/MIT-SPARK/Spark-DSG.git
+
 RUN rosdep install --from-paths . --ignore-src -r -y
 RUN cd ianvs && git checkout feature/allow_empty_pyenv
 WORKDIR /hydra_ws
-RUN . /opt/ros/jazzy/setup.sh && colcon build
+RUN . /opt/ros/jazzy/setup.sh && colcon build --packages-up-to hydra_visualizer
 RUN . /venv/bin/activate && pip install ./src/heracles_agents[all]
 COPY run_hydra_visualization.sh /run_hydra_visualization.sh
