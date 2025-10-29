@@ -37,8 +37,8 @@ services:
   # Interactive LLM-based agent interaction with database
   chatdsg:
     build:
-      context: .
-      dockerfile: chatdsg_demo.Dockerfile
+      context: ..
+      dockerfile: docker/chatdsg_demo.Dockerfile
     depends_on:
       neo4j:
         condition: service_healthy
@@ -53,7 +53,7 @@ services:
     network_mode: host
     stdin_open: true
     tty: true
-    entrypoint: [python3, chatdsg.py, /heracles/examples/scene_graphs/example_dsg.json]
+    entrypoint: [python3, chatdsg.py, --scene-graph, /example_dsg.json]
 
   # Visualize scene graph in RVIZ using Hydra ROS visualizer
   hydra_visualization:
