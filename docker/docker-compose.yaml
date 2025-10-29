@@ -1,0 +1,64 @@
+services:
+  neo4j:
+    image: neo4j:5.25.1
+    environment:
+      NEO4J_server_bolt_listen__address: :7683
+      NEO4J_server_http_advertised__address: :7469
+      NEO4J_server_http_listen__address: :7469
+      NEO4J_AUTH: neo4j/neo4j_pw
+    network_mode: "host"
+    healthcheck:
+      test: ["CMD-SHELL", "wget --no-verbose --tries=1 --spider http://localhost:7474 || exit 1"]
+      interval: 1s
+      timeout: 10s
+      retries: 10
+      start_period: 2s
+
+
+  #backend:
+  #  build: ./backend
+  #  depends_on:
+  #    db:
+  #      condition: service_healthy
+  #  environment:
+  #    DATABASE_URL: postgres://demo:demo@db:5432/demo
+  #  ports:
+  #    - "8080:8080"
+
+  cli:
+    build:
+      context: ..
+      dockerfile: docker/minimal_db_cli.Dockerfile
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      HERACLES_NEO4J_USERNAME: neo4j
+      HERACLES_NEO4J_PASSWORD: neo4j_pw
+      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
+    network_mode: "host"
+    stdin_open: true
+    tty: true
+    entrypoint: ["ipython", "-i", "/heracles/examples/load_scene_graph.py", "--", "--scene_graph", "/heracles/examples/scene_graphs/example_dsg.json"]
+
+  chatdsg:
+    build:
+      context: .
+      dockerfile: chatdsg_demo.Dockerfile
+    depends_on:
+      neo4j:
+        condition: service_healthy
+    environment:
+      HERACLES_NEO4J_USERNAME: neo4j
+      HERACLES_NEO4J_PASSWORD: neo4j_pw
+      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
+      HERACLES_OPENAI_API_KEY: $HERACLES_OPENAI_API_KEY
+      HERACLES_AGENTS_PATH: /heracles_agents
+      ADT4_HERACLES_IP: 127.0.0.1
+      ADT4_HERACLES_PORT: 7683
+    network_mode: "host"
+    stdin_open: true
+    tty: true
+    entrypoint: ["python3", "chatdsg.py", "/heracles/examples/scene_graphs/example_dsg.json"]
+    #entrypoint: ["python3", "/heracles_agents/examples/chatdsg/chatdsg.py"]
+    #entrypoint: ["/bin/bash"]
