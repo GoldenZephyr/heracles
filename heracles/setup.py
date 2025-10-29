@@ -17,7 +17,6 @@ setup(
         "pytest",
         "openai",
         "parse",
-        "open3d",
-        "spark-dsg @ git+https://github.com/MIT-SPARK/Spark-DSG.git@feature/viser",
+        "spark-dsg",
     ],
 )
