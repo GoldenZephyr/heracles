@@ -11,7 +11,8 @@ database. It expects a scene graph to initially be loaded from file via
 [spark\_dsg](https://github.com/MIT-SPARK/Spark-DSG) and provides utilities for
 translating back and forth between spark\_dsg and the Neo4j database.
 
-We provide three examples that should be pretty easy to run.
+We provide three examples that should be pretty easy to run. They require that
+Docker is installed, but they should have no other dependencies.
 
 ## Minimal Example
 
