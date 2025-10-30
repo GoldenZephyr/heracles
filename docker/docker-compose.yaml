@@ -57,8 +57,7 @@ services:
 
   # Visualize scene graph in RVIZ using Hydra ROS visualizer
   hydra_visualization:
-    build:
-      dockerfile: hydra.Dockerfile
+    image: aaronraymit/hydra_visualizer:v0.1
     depends_on:
       neo4j:
         condition: service_healthy
