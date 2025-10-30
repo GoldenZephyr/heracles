@@ -180,11 +180,11 @@ db.query("""MATCH (r: Room {nodeSymbol: "R(1)"})-[:CONTAINS*]->(o: Object)
 If you use this library, please cite us with the following:
 ```bibtex
 @misc{ray2025structuredinterfaces,
-      title={Structured Interfaces for Automated Reasoning with 3D Scene Graphs}, 
+      title={Structured Interfaces for Automated Reasoning with {3D} Scene Graphs},
       author={Aaron Ray and Jacob Arkin and Harel Biggie and Chuchu Fan and Luca Carlone and Nicholas Roy},
       year={2025},
       eprint={2510.16643},
       archivePrefix={arXiv},
-      url={https://arxiv.org/abs/2510.16643}, 
+      url={https://arxiv.org/abs/2510.16643},
 }
 ```
