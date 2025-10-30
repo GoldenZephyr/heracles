@@ -20,7 +20,6 @@ RUN git clone https://github.com/MIT-SPARK/Spark-DSG.git
 RUN git clone https://github.com/MIT-SPARK/ianvs.git
 
 RUN rosdep install --from-paths . --ignore-src -r -y
-RUN cd ianvs && git checkout feature/allow_empty_pyenv
 WORKDIR /hydra_ws
 RUN . /opt/ros/jazzy/setup.sh && colcon build --packages-up-to hydra_visualizer && colcon build --packages-up-to heracles heracles_ros heracles_agents
 RUN . /venv/bin/activate && pip install ./src/heracles_agents[all]

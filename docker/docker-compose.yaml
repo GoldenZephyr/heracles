@@ -65,7 +65,6 @@ services:
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
-      # HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
       HERACLES_IP: 127.0.0.1
       HERACLES_PORT: 7683
       HERACLES_VENV: ''
