@@ -13,8 +13,9 @@ import yaml
 from heracles.dsg_utils import summarize_dsg
 from heracles.graph_interface import db_to_spark_dsg
 from heracles.query_interface import Neo4jWrapper
-from hydra_ros import DsgPublisher
 from rclpy.node import Node
+
+from heracles_ros.hydra_python_publisher import DsgPublisher
 
 logger = logging.getLogger(__name__)
 
