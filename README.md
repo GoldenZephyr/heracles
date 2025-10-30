@@ -56,6 +56,9 @@ export HERACLES_OPENAI_API_KEY=<YOUR OPENAI API KEY>
 ./chatdsg_viser_demo.sh # Then navigate to http://127.0.0.1:8081 in your browser
 ```
 
+You may have to pan the camera around if the scene graph is rendered out of the
+initial camera frame.
+
 
 # Development Setup
 
