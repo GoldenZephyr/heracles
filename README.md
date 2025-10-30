@@ -4,9 +4,63 @@
 </p>
 
 # What is Heracles?
-This repository provides a library for encoding a [Hydra](https://github.com/MIT-SPARK/Hydra) 3D scene graph into a Neo4j database. It expects a scene graph to initially be loaded from file via [spark\_dsg](https://github.com/MIT-SPARK/Spark-DSG) and provides utilities for translating back and forth between spark\_dsg and the Neo4j database.
 
-## Setup
+This repository provides a library for encoding a
+[Hydra](https://github.com/MIT-SPARK/Hydra) 3D scene graph into a Neo4j
+database. It expects a scene graph to initially be loaded from file via
+[spark\_dsg](https://github.com/MIT-SPARK/Spark-DSG) and provides utilities for
+translating back and forth between spark\_dsg and the Neo4j database.
+
+We provide three examples that should be pretty easy to run.
+
+## Minimal Example
+
+To run the first example, run
+```bash
+./heracles_demo.sh
+```
+
+This script will load an example scene graph into the graph database and put
+you in a python terminal where you can run example queries. For example, try
+running the following query to print the location of all trashcans:
+```python
+db.query("MATCH (n: Object {class: 'trash'}) RETURN n.center as center""")
+```
+
+## Interactive ROS Example
+
+The second example will render the current state of the scene graph in the
+database in Rviz. You do _not_ need ROS installed to run this demo. However,
+you will need to specify an OpenAI api key `HERACLES_OPENAI_API_KEY` if you
+want to use the LLM interaction functionality.
+
+```bash
+export HERACLES_OPENAI_API_KEY=<YOUR OPENAI API KEY>
+xhost +local:docker && ./chatdsg_ros_demo.sh
+```
+
+Try asking the LLM how many objects are in the scene graph (press `ctrl-b` to
+send your message to the LLM). Then try telling it to update some of the
+objects (e.g., turn `sign`s into `light`s).
+
+## Interactive Viser Example
+
+Finally, we provide an example of visualizing the scene graph using Viser, so
+that no ROS is necessary. Again, you will need an OpenAI API key if you want to
+use the LLM functionality. Make sure to go to http://127.0.0.1:8081 in your
+browser after running the script!
+
+```bash
+export HERACLES_OPENAI_API_KEY=<YOUR OPENAI API KEY>
+./chatdsg_viser_demo.sh # Then navigate to http://127.0.0.1:8081 in your browser
+```
+
+
+# Development Setup
+
+If you want functionality beyond these basic demos, you will want to install
+`heracles` locally. This requires 1) spinning up a database, and 2) installing
+`heracles.
 
 Pull the Neo4j database image:
 ```bash
@@ -35,15 +89,13 @@ for an example, as that successfully installs and runs the library for CI.
 If you don't have a scene graph to test with, you can use a large example scene
 graph [here](https://drive.google.com/file/d/1aktyS792PUrj2ACRu1DoxMGse55GWloB/view?usp=drive_link).
 This scene graph has 2D places and objects, and 3D places (that don't make much
-sense), but no regions or rooms.
-
-The script `examples/dsg_test.py` is a small example of loading an existing
-scene graph file into a graph database and running some simple queries. You can
-run it in interaction mode (`ipython3 -i heracles/examples/dsg_test.py`) and
-then try executing some of the other example queries below.
+sense), but no regions or rooms. This repo contains an example scene graph as well.
 
 ## Demo - Loading a Scene Graph
-We provide a demo program that loads a scene graph from file, encodes it into a database, and performs a simple query for validation. The demo program is implemented with interactive mode in mind to make it easy to try other kinds of queries.
+We provide a demo program that loads a scene graph from file, encodes it into a
+database, and performs a simple query for validation. The demo program is
+implemented with interactive mode in mind to make it easy to try other kinds of
+queries.
 
 ### Environment Variables
 We expect certain environment variables to be set, listed below. `HERACLES\_NEO4J\_URI` can alternatively be provided via the command line. An example of `HERACLES\_NEO4J\_URI` is `neo4j://127.0.0.1:7688`.
