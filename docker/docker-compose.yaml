@@ -87,6 +87,9 @@ services:
     build:
       context: ..
       dockerfile: docker/spark_dsg_viser.Dockerfile
+    depends_on:
+      neo4j:
+        condition: service_healthy
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
