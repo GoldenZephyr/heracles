@@ -9,13 +9,15 @@ services:
       NEO4J_server_http_advertised__address: :7469
       NEO4J_server_http_listen__address: :7469
       NEO4J_AUTH: neo4j/neo4j_pw
-    network_mode: host
+    ports: [7683:7683, 7469:7469]
     healthcheck:
       test: [CMD-SHELL, wget --no-verbose --tries=1 --spider http://localhost:7469 || exit 1]
       interval: 1s
       timeout: 10s
       retries: 10
       start_period: 2s
+    networks:
+      - heracles_net
 
   # Standalone python interpreter example for running queries against database
   cli:
@@ -28,8 +30,8 @@ services:
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
-      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
-    network_mode: host
+      HERACLES_NEO4J_URI: neo4j://neo4j:7683
+    networks: [heracles_net]
     stdin_open: true
     tty: true
     entrypoint: [ipython, -i, /heracles/examples/load_scene_graph.py, --, --scene_graph, /heracles/examples/scene_graphs/example_dsg.json]
@@ -45,12 +47,13 @@ services:
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
-      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
+      HERACLES_NEO4J_URI: neo4j://neo4j:7683
       HERACLES_OPENAI_API_KEY: $HERACLES_OPENAI_API_KEY
       HERACLES_AGENTS_PATH: /heracles_agents
-      ADT4_HERACLES_IP: 127.0.0.1
+      ADT4_HERACLES_IP: neo4j
       ADT4_HERACLES_PORT: 7683
-    network_mode: host
+    networks: [heracles_net]
+    extra_hosts: [host.docker.internal:host-gateway]
     stdin_open: true
     tty: true
     entrypoint: [python3, chatdsg.py, --scene-graph, /example_dsg.json]
@@ -64,12 +67,12 @@ services:
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
-      HERACLES_IP: 127.0.0.1
+      HERACLES_IP: neo4j
       HERACLES_PORT: 7683
       HERACLES_VENV: ''
       DISPLAY: $DISPLAY
       QT_X11_NO_MITSHM: 1
-    network_mode: host
+    networks: [heracles_net]
     volumes: [/tmp/.X11-unix:/tmp/.X11-unix:rw]
     entrypoint: [/bin/bash, /run_hydra_visualization.sh]
 
@@ -78,9 +81,16 @@ services:
     build:
       context: ..
       dockerfile: docker/spark_dsg_viser.Dockerfile
+    depends_on:
+      neo4j:
+        condition: service_healthy
     environment:
       HERACLES_NEO4J_USERNAME: neo4j
       HERACLES_NEO4J_PASSWORD: neo4j_pw
-      HERACLES_NEO4J_URI: neo4j://127.0.0.1:7683
-    network_mode: host
-    entrypoint: [python, /heracles/src/heracles/heracles_viser_publisher.py, --ip, 127.0.0.1, --port, '8081']
+      HERACLES_NEO4J_URI: neo4j://neo4j:7683
+    networks: [heracles_net]
+    ports: [8081:8081]
+    entrypoint: [python, /heracles/src/heracles/heracles_viser_publisher.py, --ip, 0.0.0.0, --port, '8081', --uri, neo4j://neo4j:7683]
+networks:
+  heracles_net:
+    driver: bridge
