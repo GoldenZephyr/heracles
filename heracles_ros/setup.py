@@ -46,7 +46,8 @@ setup(
     tests_require=["pytest"],
     entry_points={
         "console_scripts": [
-            "heracles_publisher_node = heracles_ros.heracles_publisher_node:main"
+            "heracles_publisher_node = heracles_ros.heracles_publisher_node:main",
+            "heracles_state_updater_node = heracles_ros.heracles_state_updater_node:main",
         ],
     },
 )
