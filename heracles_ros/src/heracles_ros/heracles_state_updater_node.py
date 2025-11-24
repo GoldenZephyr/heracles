@@ -1,17 +1,19 @@
 #!/usr/bin/env python3
 
 import rclpy
-from rclpy.node import Node
-from geometry_msgs.msg import TransformStamped
 import tf2_ros
 
+from dsg_updater.dsg_state_utils import set_obj_center, robot_hold_obj, robot_unhold_obj
+from geometry_msgs.msg import TransformStamped
 from heracles_agents.dsg_interfaces import HeraclesDsgInterface
+from heracles_ros_interfaces.srv import UpdateHoldingState
 from heracles.query_interface import Neo4jWrapper
+from rclpy.node import Node
 
 
-class HeraclesPosePublisher(Node):
+class HeraclesStateUpdater(Node):
     def __init__(self):
-        super().__init__("heracles_pose_publisher")
+        super().__init__("heracles_state_updater")
 
         self.declare_parameter("map_frame", "map")
         self.declare_parameter("robot_name", "hamilton")
@@ -29,21 +31,71 @@ class HeraclesPosePublisher(Node):
         self.tf_listener = tf2_ros.TransformListener(self.tf_buffer, self)
         self.timer = self.create_timer(1.0 / self.publish_rate, self.timer_callback)
 
-    def timer_callback(self):
-        target_frame = f"{self.robot_name}/base_link"
+        self.holding_srv = self.create_service(
+            UpdateHoldingState,
+            #"update_holding_state",
+            "/hamilton/update_holding_state",
+            self.update_holding_state_callback
+        )
 
+    def _get_robot_pose(self):
+        target_frame = f"{self.robot_name}/base_link"
         try:
             transform: TransformStamped = self.tf_buffer.lookup_transform(
                 self.map_frame, target_frame, rclpy.time.Time()
             )
         except Exception as e:
             self.get_logger().warn(f"TF not available yet: {e}")
-            return
+            return None
 
         t = transform.transform.translation
-        x, y, z = t.x, t.y, t.z
         q = transform.transform.rotation
-        qw, qx, qy, qz = q.w, q.x, q.y, q.z
+        return t.x, t.y, t.z, q.w, q.x, q.y, q.z
+
+    def update_holding_state_callback(self, request, response):
+        object_id = request.id
+        is_holding = request.is_holding
+
+        with Neo4jWrapper(
+            self.dsgdb_conf.uri,
+            (
+                self.dsgdb_conf.username.get_secret_value(),
+                self.dsgdb_conf.password.get_secret_value(),
+            ),
+            atomic_queries=True,
+            print_profiles=False,
+        ) as db:
+            if is_holding:
+                response.success = robot_hold_obj(db, self.robot_name, object_id)
+            else:
+                robot_pose = self._get_robot_pose()
+                if robot_pose is None:
+                    response.success = False
+                else:
+                    x, y, z, _, _, _, _ = robot_pose
+                    last_pos_success = set_obj_center(db, object_id, x, y, z)
+                    unhold_success = robot_unhold_obj(db, self.robot_name, object_id)
+                    response.success = last_pos_success and unhold_success
+
+        if response.success:
+            self.get_logger().info(
+                f"Successfully set holding state: robot={self.robot_name}, "
+                f"object={object_id}, is_holding={is_holding}"
+            )
+        else:
+            self.get_logger().error(
+                f"Failed to set holding state: robot={self.robot_name}, "
+                f"object={object_id}, is_holding={is_holding}"
+            )
+
+        return response
+
+    def timer_callback(self):
+        robot_pose = self._get_robot_pose()
+        if robot_pose is None:
+            return
+
+        x, y, z, qw, qx, qy, qz = robot_pose
 
         query = f"""
             MERGE (r:Robot {{name: '{self.robot_name}'}})
@@ -72,7 +124,7 @@ class HeraclesPosePublisher(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    node = HeraclesPosePublisher()
+    node = HeraclesStateUpdater()
 
     try:
         rclpy.spin(node)
