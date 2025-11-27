@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 import rclpy
 import tf2_ros
-
-from dsg_updater.dsg_state_utils import set_obj_center, robot_hold_obj, robot_unhold_obj
+from dsg_updater.dsg_state_utils import robot_hold_obj, robot_unhold_obj, set_obj_center
 from geometry_msgs.msg import TransformStamped
+from heracles.query_interface import Neo4jWrapper
 from heracles_agents.dsg_interfaces import HeraclesDsgInterface
 from heracles_ros_interfaces.srv import UpdateHoldingState
-from heracles.query_interface import Neo4jWrapper
 from rclpy.node import Node
 
 
@@ -23,7 +22,7 @@ class HeraclesStateUpdater(Node):
 
         self.dsgdb_conf = HeraclesDsgInterface(
             dsg_interface_type="heracles",
-            uri="neo4j://$ADT4_HERACLES_IP:$ADT4_HERACLES_PORT"
+            uri="neo4j://$ADT4_HERACLES_IP:$ADT4_HERACLES_PORT",
         )
 
         self.tf_buffer = tf2_ros.Buffer()
@@ -33,7 +32,7 @@ class HeraclesStateUpdater(Node):
         self.holding_srv = self.create_service(
             UpdateHoldingState,
             "~/update_holding_state",
-            self.update_holding_state_callback
+            self.update_holding_state_callback,
         )
 
     def _get_robot_pose(self):
