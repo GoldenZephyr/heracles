@@ -1,5 +1,4 @@
 #!/usr/bin/env python3
-
 import rclpy
 import tf2_ros
 
@@ -33,8 +32,7 @@ class HeraclesStateUpdater(Node):
 
         self.holding_srv = self.create_service(
             UpdateHoldingState,
-            #"update_holding_state",
-            "/hamilton/update_holding_state",
+            "~/update_holding_state",
             self.update_holding_state_callback
         )
 
