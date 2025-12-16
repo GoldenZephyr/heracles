@@ -13,6 +13,8 @@ class HeraclesStateUpdater(Node):
     def __init__(self):
         super().__init__("heracles_state_updater")
 
+        self.declare_parameter("heracles_ip", "")
+        self.declare_parameter("heracles_port", -1)
         self.declare_parameter("map_frame", "map")
         self.declare_parameter("robot_name", "hamilton")
         self.declare_parameter("publish_rate", 1.0)
@@ -20,9 +22,16 @@ class HeraclesStateUpdater(Node):
         self.robot_name = self.get_parameter("robot_name").value
         self.publish_rate = self.get_parameter("publish_rate").value
 
+        ip = self.get_parameter("heracles_ip").get_parameter_value().string_value
+        port = self.get_parameter("heracles_port").get_parameter_value().integer_value
+        self.get_logger().info(f"Port: {port}")
+
+        assert ip != "", "Please set database IP"
+        assert port > 0, "Please set database port"
+
         self.dsgdb_conf = HeraclesDsgInterface(
             dsg_interface_type="heracles",
-            uri="neo4j://$ADT4_HERACLES_IP:$ADT4_HERACLES_PORT",
+            uri=f"neo4j://{ip}:{port}",
         )
 
         self.tf_buffer = tf2_ros.Buffer()
