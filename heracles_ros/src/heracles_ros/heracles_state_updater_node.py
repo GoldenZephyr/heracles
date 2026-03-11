@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 import rclpy
 import tf2_ros
-from dsg_updater.dsg_state_utils import robot_hold_obj, robot_unhold_obj, set_obj_center
+from dsg_updater.dsg_state_utils import robot_hold_obj, robot_unhold_obj, set_obj_center, set_robot_pose
 from geometry_msgs.msg import TransformStamped
 from heracles.query_interface import Neo4jWrapper
 from heracles_agents.dsg_interfaces import HeraclesDsgInterface
@@ -101,17 +101,8 @@ class HeraclesStateUpdater(Node):
         if robot_pose is None:
             return
 
-        x, y, z, qw, qx, qy, qz = robot_pose
+        x, y, z, _, _, _, _ = robot_pose
 
-        query = f"""
-            MERGE (r:Robot {{name: '{self.robot_name}'}})
-            SET r.position = point({{x: {x}, y: {y}, z: {z}}}),
-                r.qw = {qw},
-                r.qx = {qx},
-                r.qy = {qy},
-                r.qz = {qz}
-            RETURN r
-        """
         with Neo4jWrapper(
             self.dsgdb_conf.uri,
             (
@@ -121,7 +112,7 @@ class HeraclesStateUpdater(Node):
             atomic_queries=True,
             print_profiles=False,
         ) as db:
-            db.query(query)
+            set_robot_pose(db, self.robot_name, *robot_pose)
 
             self.get_logger().debug(
                 f"Updating DB: {self.robot_name} pos=({x:.2f},{y:.2f},{z:.2f})"
