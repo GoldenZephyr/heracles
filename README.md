@@ -11,7 +11,9 @@ database. It expects a scene graph to initially be loaded from file via
 [spark\_dsg](https://github.com/MIT-SPARK/Spark-DSG) and provides utilities for
 translating back and forth between spark\_dsg and the Neo4j database.
 
-We provide three examples that should be pretty easy to run. They require that
+If you are interested in using Heracles within an agentic framework, please check out our related repository [heracles_agents](https://github.com/goldenZephyr/heracles_agents). Heracles has been used as part of an LLM agentic framework for answering questions about the scene graph and grounding instructions to Planning Domain Definition Language (PDDL) goals for robot planning. Please see our paper "[Structured Interfaces for Automated Reasoning with 3D Scene Graphs](https://arxiv.org/abs/2510.16643)".
+
+To try out Heracles, we provide three examples that should be pretty easy to run. They require that
 Docker is installed, but they should have no other dependencies.
 
 ## Minimal Example
