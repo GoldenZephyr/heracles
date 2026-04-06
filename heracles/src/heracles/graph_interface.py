@@ -613,16 +613,21 @@ def db_record_to_spark_attrs(record, object_labelspace, room_labelspace):
         attrs.distance = float(record["distance"])
 
     # Observation timestamps.
-    if hasattr(attrs, "first_observed_ns") and "first_observed_ns" in record:
-        attrs.first_observed_ns = int(record["first_observed_ns"])
-    if hasattr(attrs, "last_observed_ns") and "last_observed_ns" in record:
-        attrs.last_observed_ns = int(record["last_observed_ns"])
+    # KhronosObjectAttributes exposes these as read-only lists; standard types
+    # use a settable scalar. Try to set, skip gracefully if read-only.
+    for ts_field in ("first_observed_ns", "last_observed_ns"):
+        if hasattr(attrs, ts_field) and ts_field in record:
+            try:
+                setattr(attrs, ts_field, int(record[ts_field]))
+            except (AttributeError, TypeError):
+                pass  # Read-only on this attr type (e.g., KhronosObjectAttributes)
 
     # TravNodeAttributes boundary.
     if hasattr(attrs, "radii") and "radii" in record:
         attrs.radii = [float(r) for r in record["radii"]]
         if "states" in record:
-            attrs.states = [int(s) for s in record["states"]]
+            # Convert ints back to TraversabilityState enums for the C++ binding.
+            attrs.states = [spark_dsg.TraversabilityState(int(s)) for s in record["states"]]
         if "min_radius" in record:
             attrs.min_radius = float(record["min_radius"])
         if "max_radius" in record:
