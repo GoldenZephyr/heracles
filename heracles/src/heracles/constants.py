@@ -8,6 +8,7 @@ PLACES = "Place"
 OBJECTS = "Object"
 ROOMS = "Room"
 BUILDINGS = "Building"
+AGENTS = "Agent"
 
 # Mappings to/from heracles and spark_dsg
 SPARK_TO_HERACLES_LAYER_NAMES = MappingProxyType(
