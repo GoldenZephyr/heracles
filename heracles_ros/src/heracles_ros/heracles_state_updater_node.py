@@ -1,7 +1,12 @@
 #!/usr/bin/env python3
 import rclpy
 import tf2_ros
-from dsg_updater.dsg_state_utils import robot_hold_obj, robot_unhold_obj, set_obj_center, set_robot_pose
+from dsg_updater.dsg_state_utils import (
+    robot_hold_obj,
+    robot_unhold_obj,
+    set_obj_center,
+    set_robot_pose,
+)
 from geometry_msgs.msg import TransformStamped
 from heracles.query_interface import Neo4jWrapper
 from heracles_agents.dsg_interfaces import HeraclesDsgInterface
