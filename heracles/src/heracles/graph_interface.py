@@ -262,6 +262,20 @@ def insert_nodes_to_db(db, layer_label, node_dicts):
         nodes=node_dicts,
     )
 
+    # Convert flat bbox_x/y/z/l/w/h to Point3D bbox_center and bbox_dim.
+    # db_record_to_spark_attrs() expects these as Point3D for reconstruction.
+    has_bbox = any("bbox_x" in d for d in node_dicts)
+    if has_bbox:
+        db.execute(
+            f"""
+            MATCH (n:{layer_label})
+            WHERE n.bbox_x IS NOT NULL
+            SET n.bbox_center = point({{x: n.bbox_x, y: n.bbox_y, z: n.bbox_z}}),
+                n.bbox_dim = point({{x: n.bbox_l, y: n.bbox_w, z: n.bbox_h}})
+            REMOVE n.bbox_x, n.bbox_y, n.bbox_z, n.bbox_l, n.bbox_w, n.bbox_h
+            """
+        )
+
     # Convert flat boundary_x/y/z lists to native Point3D list.
     # This enables Neo4j spatial functions (point.distance, point.withinBBox)
     # on boundary points in future queries.
