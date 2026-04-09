@@ -284,8 +284,9 @@ def insert_nodes_to_db(db, layer_label, node_dicts):
 # ---------------------------------------------------------------------------
 
 
-def add_objects_from_dsg(G, db):
-    object_labelspace = G.metadata.get().get("labelspace", {})
+def add_objects_from_dsg(G, db, object_labelspace=None):
+    if object_labelspace is None:
+        object_labelspace = {}
     nodes = [
         node_to_dict(o, object_labelspace=object_labelspace)
         for o in G.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes
@@ -300,13 +301,14 @@ def add_places_from_dsg(G, db):
     insert_nodes_to_db(db, constants.PLACES, nodes)
 
 
-def add_mesh_places_from_dsg(G, db):
+def add_mesh_places_from_dsg(G, db, object_labelspace=None):
     try:
         mesh_place_layer = G.get_layer(spark_dsg.DsgLayers.MESH_PLACES)
     except IndexError:
         mesh_place_layer = G.get_layer(20)
 
-    object_labelspace = G.metadata.get().get("labelspace", {})
+    if object_labelspace is None:
+        object_labelspace = {}
     nodes = [
         node_to_dict(p, object_labelspace=object_labelspace)
         for p in mesh_place_layer.nodes
@@ -314,8 +316,9 @@ def add_mesh_places_from_dsg(G, db):
     insert_nodes_to_db(db, constants.MESH_PLACES, nodes)
 
 
-def add_rooms_from_dsg(G, db):
-    room_labelspace = G.metadata.get().get("room_labelspace", {"0": "Unknown"})
+def add_rooms_from_dsg(G, db, room_labelspace=None):
+    if room_labelspace is None:
+        room_labelspace = {}
     nodes = [
         node_to_dict(r, room_labelspace=room_labelspace)
         for r in G.get_layer(spark_dsg.DsgLayers.ROOMS).nodes
@@ -338,14 +341,22 @@ def add_buildings_from_dsg(G, db):
 def spark_dsg_to_db(G, db, source_file_path=None):
     """Load all nodes and edges from a spark_dsg graph into Neo4j.
 
+    Extracts labelspaces from DSG metadata (embedded ``"labelspaces"`` key)
+    and passes them to per-layer functions for semantic label → class name
+    mapping.
+
     If ``source_file_path`` is provided, it is stored as a ``_GraphMetadata``
     node so that downstream tools (e.g., SGET) can locate the original file
     on disk for mesh data and other large assets not stored in Neo4j.
     """
-    add_objects_from_dsg(G, db)
+    from .utils import extract_labelspaces_from_dsg
+
+    object_ls, room_ls = extract_labelspaces_from_dsg(G)
+
+    add_objects_from_dsg(G, db, object_labelspace=object_ls)
     add_places_from_dsg(G, db)
-    add_mesh_places_from_dsg(G, db)
-    add_rooms_from_dsg(G, db)
+    add_mesh_places_from_dsg(G, db, object_labelspace=object_ls)
+    add_rooms_from_dsg(G, db, room_labelspace=room_ls)
     add_buildings_from_dsg(G, db)
     add_edges_from_dsg(G, db)
 
@@ -715,10 +726,19 @@ def db_to_spark_dsg(
     new_scene_graph = spark_dsg.DynamicSceneGraph()
     new_scene_graph.clear(True)
 
-    object_labelspace = spark_dsg.Labelspace(
-        {v: k for k, v in label_to_semantic_id.items()}
-    )
-    new_scene_graph.set_labelspace(object_labelspace, 2, 0)
+    # Write labelspaces so they persist in the exported DSG metadata.
+    # set_labelspace stores them under metadata["labelspaces"]["_lXpY"].
+    if label_to_semantic_id:
+        object_labelspace = spark_dsg.Labelspace(
+            {v: k for k, v in label_to_semantic_id.items()}
+        )
+        new_scene_graph.set_labelspace(object_labelspace, 2, 0)
+
+    if room_label_to_semantic_id:
+        room_labelspace = spark_dsg.Labelspace(
+            {v: k for k, v in room_label_to_semantic_id.items()}
+        )
+        new_scene_graph.set_labelspace(room_labelspace, 4, 0)
 
     for spark_layer_id, heracles_layer_name in spark_layer_id_to_layer_name.items():
         if spark_layer_id == 20:

@@ -1,13 +1,9 @@
-from importlib.resources import as_file, files
-
 import neo4j
 import numpy as np
 import pytest
 import spark_dsg
-import yaml
 
 import heracles
-import heracles.resources
 from heracles.graph_interface import (
     add_buildings_from_dsg,
     add_edges_from_dsg,
@@ -27,13 +23,10 @@ def try_drop_index(db, index_name):
 
 
 def add_dsg_metadata(G):
-    with as_file(
-        files(heracles.resources).joinpath("ade20k_mit_label_space.yaml")
-    ) as path:
-        with open(str(path), "r") as fo:
-            labelspace = yaml.safe_load(fo)
-    id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
-    G.metadata.add({"labelspace": id_to_label})
+    # Inject a minimal labelspace using spark_dsg's native API.
+    # spark_dsg_to_db() extracts these via extract_labelspaces_from_dsg().
+    obj_ls = spark_dsg.Labelspace({0: "unknown", 1: "tree", 2: "box"})
+    G.set_labelspace(obj_ls, 2, 0)
 
     layers = {
         2: "Object",

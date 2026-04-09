@@ -24,15 +24,44 @@ def get_labelspace(labelspace_name):
     return id_to_label
 
 
-def load_dsg_to_db(
-    object_labelspace, room_labelspace, neo4j_uri, neo4j_creds, scene_graph
-):
-    id_to_object_label = get_labelspace(object_labelspace)
-    scene_graph.metadata.add({"labelspace": id_to_object_label})
+def extract_labelspaces_from_dsg(G):
+    """Extract object and room labelspaces from DSG metadata.
 
-    id_to_room_label = get_labelspace(room_labelspace)
-    scene_graph.metadata.add({"room_labelspace": id_to_room_label})
+    Reads the new embedded format written by spark_dsg's ``set_labelspace``::
 
+        metadata["labelspaces"]["_l2p0"] = [[0, "unknown"], [1, "chair"], ...]
+        metadata["labelspaces"]["_l4p0"] = [[0, "lounge"], [1, "hallway"], ...]
+
+    Returns
+    -------
+    (object_ls, room_ls) : tuple[dict | None, dict | None]
+        Each is ``{str(int_id): name}`` or ``None`` if not found.
+    """
+    meta = G.metadata.get()
+    labelspaces = meta.get("labelspaces")
+    if not labelspaces:
+        return None, None
+
+    object_ls = None
+    room_ls = None
+
+    obj_data = labelspaces.get("_l2p0")  # Objects: layer 2, partition 0
+    if obj_data:
+        object_ls = {str(pair[0]): pair[1] for pair in obj_data}
+
+    room_data = labelspaces.get("_l4p0")  # Rooms: layer 4, partition 0
+    if room_data:
+        room_ls = {str(pair[0]): pair[1] for pair in room_data}
+
+    return object_ls, room_ls
+
+
+def load_dsg_to_db(neo4j_uri, neo4j_creds, scene_graph):
+    """Load a DSG into Neo4j.
+
+    Labelspaces must be embedded in the DSG metadata via ``set_labelspace()``.
+    Use ``extract_labelspaces_from_dsg()`` to verify before calling.
+    """
     # Set the layer id to layer name mappings
     spark_layer_id_to_heracles_layer_str = {
         2: "Object",

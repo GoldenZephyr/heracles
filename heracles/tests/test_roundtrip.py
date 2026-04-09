@@ -26,7 +26,6 @@ from heracles.graph_interface import (
     spark_dsg_to_db,
 )
 from heracles.query_interface import Neo4jWrapper
-from heracles.utils import get_labelspace
 
 # ---------------------------------------------------------------------------
 # Paths
@@ -73,12 +72,11 @@ def db():
 
 
 def _load_and_push(db, dsg_path):
-    """Load a DSG file, add metadata, push to Neo4j. Returns the original DSG."""
+    """Load a DSG file, push to Neo4j. Returns the original DSG.
+
+    Labelspaces are read from the DSG's embedded metadata by spark_dsg_to_db().
+    """
     original = spark_dsg.DynamicSceneGraph.load(dsg_path)
-    obj_labels = get_labelspace("ade20k_mit_label_space.yaml")
-    room_labels = get_labelspace("b45_label_space.yaml")
-    original.metadata.add({"labelspace": obj_labels})
-    original.metadata.add({"room_labelspace": room_labels})
     original.metadata.add(
         {
             "LayerIdToHeraclesLayerStr": {
@@ -93,6 +91,13 @@ def _load_and_push(db, dsg_path):
     )
     initialize_db(db)
     spark_dsg_to_db(original, db, source_file_path=dsg_path)
+
+    # Extract labelspaces for callers that need the reverse mappings.
+    from heracles.utils import extract_labelspaces_from_dsg
+
+    obj_ls, room_ls = extract_labelspaces_from_dsg(original)
+    obj_labels = {name: int(sid) for sid, name in obj_ls.items()} if obj_ls else {}
+    room_labels = {name: int(sid) for sid, name in room_ls.items()} if room_ls else {}
     return original, obj_labels, room_labels
 
 
