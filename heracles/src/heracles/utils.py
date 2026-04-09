@@ -12,18 +12,6 @@ from heracles.graph_interface import (
 from heracles.query_interface import Neo4jWrapper
 
 
-def get_labelspace(labelspace_name):
-    if os.path.exists(labelspace_name):
-        with open(labelspace_name, "r") as file:
-            labelspace = yaml.safe_load(file)
-    else:
-        with as_file(files(heracles.resources).joinpath(labelspace_name)) as path:
-            with open(str(path), "r") as file:
-                labelspace = yaml.safe_load(file)
-    id_to_label = {item["label"]: item["name"] for item in labelspace["label_names"]}
-    return id_to_label
-
-
 def extract_labelspaces_from_dsg(G):
     """Extract object and room labelspaces from DSG metadata.
 
