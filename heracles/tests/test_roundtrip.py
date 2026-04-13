@@ -163,11 +163,7 @@ class TestOldDsgRoundtrip:
         """Reconstructed DSG has the same node symbols as original."""
         original, obj_labels, room_labels = _load_and_push(db, OLD_DSG_PATH)
 
-        label_to_sid = {v: k for k, v in obj_labels.items()}
-        room_to_sid = {v: k for k, v in room_labels.items()}
-        layer_map = {2: "Object", 3: "Place", 4: "Room", 5: "Building", 20: "MeshPlace"}
-
-        reconstructed = db_to_spark_dsg(db, layer_map, label_to_sid, room_to_sid)
+        reconstructed = db_to_spark_dsg(db)
 
         # Compare object node symbols.
         orig_objs = {n.id.str(True) for n in original.get_layer(spark_dsg.DsgLayers.OBJECTS).nodes}
