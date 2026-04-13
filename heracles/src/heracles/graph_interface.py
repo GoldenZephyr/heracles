@@ -374,6 +374,27 @@ def spark_dsg_to_db(G, db, source_file_path=None):
     add_buildings_from_dsg(G, db)
     add_edges_from_dsg(G, db)
 
+    # Store labelspaces in Neo4j so db_to_spark_dsg() can reconstruct
+    # without requiring external YAML files or function arguments.
+    if object_ls:
+        ids = [int(k) for k in object_ls.keys()]
+        names = list(object_ls.values())
+        db.execute(
+            "MERGE (m:_Labelspace {layer: 'object'}) "
+            "SET m.ids = $ids, m.names = $names",
+            ids=ids,
+            names=names,
+        )
+    if room_ls:
+        ids = [int(k) for k in room_ls.keys()]
+        names = list(room_ls.values())
+        db.execute(
+            "MERGE (m:_Labelspace {layer: 'room'}) "
+            "SET m.ids = $ids, m.names = $names",
+            ids=ids,
+            names=names,
+        )
+
     if source_file_path is not None:
         import os
 
@@ -729,19 +750,43 @@ def add_edges_from_db(db, G):
     return
 
 
-def db_to_spark_dsg(
-    db, spark_layer_id_to_layer_name, label_to_semantic_id, room_label_to_semantic_id
-):
+_DEFAULT_LAYER_MAP = {
+    2: constants.OBJECTS,
+    3: constants.PLACES,
+    4: constants.ROOMS,
+    5: constants.BUILDINGS,
+    20: constants.MESH_PLACES,
+}
+
+
+def _read_labelspace_from_db(db, layer_key):
+    """Read a labelspace from Neo4j's _Labelspace node. Returns {name: id}."""
+    records, _, _ = db.execute(
+        "MATCH (m:_Labelspace {layer: $layer}) RETURN m.ids AS ids, m.names AS names",
+        layer=layer_key,
+    )
+    if not records:
+        logger.warning("No _Labelspace node found for layer '%s' in Neo4j", layer_key)
+        return {}
+    ids = records[0]["ids"]
+    names = records[0]["names"]
+    return {name: sid for sid, name in zip(ids, names)}
+
+
+def db_to_spark_dsg(db):
     """Reconstruct a spark_dsg DynamicSceneGraph from Neo4j.
 
+    Reads labelspaces from ``_Labelspace`` nodes in the database.
     Uses ``attr_type`` stored on each node to create the correct attribute
-    class.  Falls back to property-presence inference for old data.
+    class.
     """
+    label_to_semantic_id = _read_labelspace_from_db(db, "object")
+    room_label_to_semantic_id = _read_labelspace_from_db(db, "room")
+
     new_scene_graph = spark_dsg.DynamicSceneGraph()
     new_scene_graph.clear(True)
 
     # Write labelspaces so they persist in the exported DSG metadata.
-    # set_labelspace stores them under metadata["labelspaces"]["_lXpY"].
     if label_to_semantic_id:
         object_labelspace = spark_dsg.Labelspace(
             {v: k for k, v in label_to_semantic_id.items()}
@@ -754,7 +799,7 @@ def db_to_spark_dsg(
         )
         new_scene_graph.set_labelspace(room_labelspace, 4, 0)
 
-    for spark_layer_id, heracles_layer_name in spark_layer_id_to_layer_name.items():
+    for spark_layer_id, heracles_layer_name in _DEFAULT_LAYER_MAP.items():
         if spark_layer_id == 20:
             new_scene_graph.add_layer(
                 3,
